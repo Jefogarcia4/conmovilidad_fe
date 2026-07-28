@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+
+/*
+ * Tokens tomados del mockup de ConMovilidad (conmovilidad.vercel.app).
+ * Cualquier color nuevo debe salir de aquí, nunca escribirse suelto en un componente.
+ */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Sora', 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* Llamada a la acción: el magenta de la marca. */
+  --color-cta: #d8017d;
+  --color-cta-hover: #b9006a;
+  --color-cta-foreground: #fefafd;
+
+  /* Gris oscuro de la marca: fondo del panel del login y texto de énfasis. */
+  --color-primary: #393338;
+  --color-primary-foreground: #faf7f9;
+
+  /* Superficies y texto. */
+  --color-background: #fdfbfc;
+  --color-foreground: #221e22;
+  --color-muted: #f5f2f4;
+  --color-muted-foreground: #676166;
+  --color-card: #ffffff;
+  --color-border: #e4e0e2;
+  --color-input: #e4e0e2;
+  --color-ring: #d8017d;
+
+  /* Realces suaves en tono marca. */
+  --color-accent: #ffe7f1;
+  --color-accent-foreground: #8e0050;
+
+  --color-destructive: #e40014;
+
+  --radius: 0.75rem;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+
+  /* Solo visible al navegar con teclado: no molesta al usuario de ratón. */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+}
