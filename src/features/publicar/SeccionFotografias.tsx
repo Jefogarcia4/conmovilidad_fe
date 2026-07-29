@@ -13,6 +13,12 @@ export interface ImagenPublicacion {
 
 interface Props {
   imagenes: ImagenPublicacion[]
+  /**
+   * URLs que ya pertenecen a un vehículo guardado. Quitarlas solo las saca de la lista: el
+   * archivo lo borra la API al confirmar el cambio, para que cancelar no deje el vehículo
+   * publicado con imágenes rotas.
+   */
+  urlsPersistidas?: string[]
   onCambio: (imagenes: ImagenPublicacion[]) => void
   error?: string
 }
@@ -20,7 +26,7 @@ interface Props {
 const ACEPTA = 'image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,.heic,.heif'
 const MAXIMO = 20
 
-export function SeccionFotografias({ imagenes, onCambio, error }: Props) {
+export function SeccionFotografias({ imagenes, urlsPersistidas, onCambio, error }: Props) {
   const entrada = useRef<HTMLInputElement>(null)
   const [subiendo, setSubiendo] = useState(false)
   const [errorSubida, setErrorSubida] = useState<string | null>(null)
@@ -65,7 +71,11 @@ export function SeccionFotografias({ imagenes, onCambio, error }: Props) {
 
     onCambio(imagenes.filter((_, i) => i !== indice))
 
-    // Se borra del almacén para no dejar basura si el usuario nunca publica el vehículo.
+    // Una imagen ya guardada sigue viva hasta que se confirme el cambio: si se borrara aquí,
+    // cancelar la edición dejaría el vehículo publicado apuntando a un archivo inexistente.
+    if (urlsPersistidas?.includes(imagen.url)) return
+
+    // La recién subida sí se borra al instante, para no dejar basura si nunca se publica.
     await archivos.eliminarImagenVehiculo(imagen.url).catch(() => undefined)
   }
 

@@ -67,6 +67,9 @@ export const vehiculos = {
 
   crear: (datos: CrearVehiculoRequest) => api.post<VehiculoDetalle>('/vehiculos', datos),
 
+  actualizar: (id: string, datos: ActualizarVehiculoRequest) =>
+    api.put<VehiculoDetalle>(`/vehiculos/${id}`, datos),
+
   eliminar: (id: string) => api.delete<void>(`/vehiculos/${id}`),
 
   cambiarEstado: (id: string, estado: string) =>
@@ -122,6 +125,12 @@ export interface CrearVehiculoRequest {
   publicarInmediatamente?: boolean
   imagenes?: { url: string; esPrincipal: boolean; orden: number }[]
 }
+
+/**
+ * La actualización reemplaza el vehículo completo, galería incluida: lo que no se manda se borra.
+ * Por eso no admite `publicarInmediatamente`; el estado se cambia con `cambiarEstado`.
+ */
+export type ActualizarVehiculoRequest = Omit<CrearVehiculoRequest, 'publicarInmediatamente'>
 
 export const catalogos = {
   marcas: () => api.get<Marca[]>('/catalogos/marcas'),

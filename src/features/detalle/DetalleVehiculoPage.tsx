@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Pencil } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError } from '@/api/cliente'
 import { vehiculos } from '@/api/endpoints'
+import { useAuth } from '@/auth/useAuth'
 import { Alerta } from '@/components/ui/Alerta'
 import { Boton } from '@/components/ui/Boton'
 import { EstadoBadge } from '@/features/vehiculos/EstadoBadge'
+import { puedeGestionarVehiculo } from '@/features/vehiculos/permisos'
 import { useEtiquetasVehiculo } from '@/features/vehiculos/useEtiquetasVehiculo'
 import { GaleriaVehiculo } from './GaleriaVehiculo'
 import { InformacionVehiculo } from './InformacionVehiculo'
@@ -14,6 +16,7 @@ import { PanelContacto } from './PanelContacto'
 export function DetalleVehiculoPage() {
   const { id } = useParams<{ id: string }>()
   const etiqueta = useEtiquetasVehiculo()
+  const { usuario } = useAuth()
 
   const { data, isPending, error } = useQuery({
     queryKey: ['vehiculos', 'detalle', id],
@@ -77,6 +80,15 @@ export function DetalleVehiculoPage() {
 
         {/* Un vehículo reservado o vendido sigue siendo visible: hay que decirlo aquí. */}
         {data.estado !== 'Disponible' && <EstadoBadge estado={data.estado} />}
+
+        {puedeGestionarVehiculo(usuario, data.publicadoPorUsuarioId) && (
+          <Link to={`/vehicle/${data.id}/editar`} className="ml-auto">
+            <Boton variante="secundario" tamano="sm">
+              <Pencil className="size-4" aria-hidden />
+              Editar
+            </Boton>
+          </Link>
+        )}
       </div>
 
       {/* `items-start` es lo que hace funcionar el `sticky` del panel: sin él, el grid estira

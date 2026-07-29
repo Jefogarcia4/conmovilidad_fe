@@ -1,7 +1,10 @@
 import { sesion } from './sesion'
 import type { AuthResponse, ProblemDetails } from './types'
 
-const BASE = import.meta.env.VITE_API_URL ?? '/api'
+// `||` y no `??`: en desarrollo la variable existe pero está vacía para indicar «usa la ruta
+// relativa», y `??` solo sustituye null o undefined, así que dejaría la base en cadena vacía y
+// todas las peticiones saldrían sin el prefijo `/api`.
+const BASE = import.meta.env.VITE_API_URL || '/api'
 
 /** Error de la API ya interpretado, con el `codigo` estable que devuelve el backend. */
 export class ApiError extends Error {

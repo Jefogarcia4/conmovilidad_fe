@@ -1,4 +1,5 @@
-const BASE_API = import.meta.env.VITE_API_URL ?? '/api'
+// Vacía en desarrollo por convención, así que `||` y no `??` (ver `api/cliente.ts`).
+const BASE_API = import.meta.env.VITE_API_URL || '/api'
 
 /**
  * Origen de la API sin el sufijo `/api`. Vacío en desarrollo, donde el proxy de Vite sirve

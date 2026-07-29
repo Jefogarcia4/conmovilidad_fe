@@ -32,6 +32,9 @@ const UsuariosPage = lazy(() =>
 const PublicarPage = lazy(() =>
   import('./features/publicar/PublicarPage').then((m) => ({ default: m.PublicarPage })),
 )
+const EditarVehiculoPage = lazy(() =>
+  import('./features/publicar/EditarVehiculoPage').then((m) => ({ default: m.EditarVehiculoPage })),
+)
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,7 +69,7 @@ export default function App() {
                 <Route path="/my-vehicles" element={<MisVehiculosPage />} />
                 <Route path="/publish" element={<PublicarPage />} />
                 <Route path="/vehicle/:id" element={<DetalleVehiculoPage />} />
-                <Route path="/vehicle/:id/editar" element={<PendientePage titulo="Editar vehículo" />} />
+                <Route path="/vehicle/:id/editar" element={<EditarVehiculoPage />} />
 
                 <Route element={<RutaAdmin />}>
                   <Route path="/admin" element={<LayoutAdmin />}>
