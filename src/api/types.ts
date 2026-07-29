@@ -78,7 +78,8 @@ export interface VehiculoLista {
   precioNegociable: boolean
   tipoVehiculo: TipoVehiculo
   combustible: TipoCombustible
-  transmision: TipoTransmision
+  /** Opcional: hay vehículos cargados sin transmisión. */
+  transmision?: TipoTransmision
   ciudad?: string
   esBlindado: boolean
   estado: EstadoVehiculo

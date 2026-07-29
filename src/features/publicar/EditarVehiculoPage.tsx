@@ -74,7 +74,9 @@ function Editor({ vehiculo }: { vehiculo: VehiculoDetalle }) {
         // reemplaza el vehículo completo y omitirlos los borraría.
         aPeticionVehiculo(datos, imagenes, {
           precioNegociable: vehiculo.precioNegociable,
-          transmision: vehiculo.transmision,
+          // `|| undefined` y no a secas: una API que aún no tenga la corrección devuelve cadena
+          // vacía cuando el vehículo no tiene transmisión, y "" no es un valor válido del enum.
+          transmision: vehiculo.transmision || undefined,
           numeroPuertas: vehiculo.numeroPuertas,
           descripcion: vehiculo.descripcion,
         }),
