@@ -64,13 +64,13 @@ export function LoginPage() {
         <div className="w-full max-w-sm space-y-8">
           <div className="space-y-2 text-center">
             {/* En móvil no hay panel de marca, así que el logo se muestra aquí. */}
-            <Logo className="mx-auto h-10 lg:hidden" />
+            <Logo tamano="lg" className="mx-auto lg:hidden" />
 
             <h2 className="font-display text-2xl font-bold text-foreground">Bienvenido de nuevo</h2>
 
             <p className="text-sm text-muted-foreground">
               Ingresa a tu cuenta de{' '}
-              <span className="font-medium text-foreground">ConMovilidad</span>
+              <span className="font-medium text-foreground">Autos Galería</span>
             </p>
           </div>
 

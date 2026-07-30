@@ -41,7 +41,7 @@ export function MisVehiculosPage() {
           <div>
             <h1 className="font-display text-3xl font-bold text-foreground">Mis vehículos</h1>
             <p className="text-muted-foreground">
-              Gestiona tus publicaciones activas en ConMovilidad.
+              Gestiona tus publicaciones activas en Autos Galería.
             </p>
           </div>
 

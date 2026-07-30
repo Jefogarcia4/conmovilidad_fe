@@ -82,7 +82,7 @@ export function ActivarCuentaPage() {
     <main className="flex min-h-dvh items-center justify-center bg-background px-6 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
-          <Logo className="h-10" />
+          <Logo tamano="lg" />
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6">

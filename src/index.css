@@ -1,36 +1,42 @@
 @import 'tailwindcss';
 
 /*
- * Tokens tomados del mockup de ConMovilidad (conmovilidad.vercel.app).
+ * Tokens derivados del logotipo de Autos Galería.
  * Cualquier color nuevo debe salir de aquí, nunca escribirse suelto en un componente.
+ *
+ * El logo es prácticamente monocromo: el 92% de sus píxeles son gris puro, y el único tono
+ * cromático que contiene son los reflejos del cromo, en H≈197º. De ahí sale el reparto:
+ * los grises dan la estructura y ese azul acero —subido de saturación para que sirva como
+ * color de acción— marca lo que se puede pulsar.
  */
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Sora', 'Inter', ui-sans-serif, system-ui, sans-serif;
 
-  /* Llamada a la acción: el magenta de la marca. */
-  --color-cta: #d8017d;
-  --color-cta-hover: #b9006a;
-  --color-cta-foreground: #fefafd;
+  /* Llamada a la acción: el azul acero del cromo del logo (5.87:1 sobre blanco). */
+  --color-cta: #0f6d8a;
+  --color-cta-hover: #0b5468;
+  --color-cta-foreground: #f7fcfd;
 
-  /* Gris oscuro de la marca: fondo del panel del login y texto de énfasis. */
-  --color-primary: #393338;
-  --color-primary-foreground: #faf7f9;
+  /* Grafito del escudo: fondo del panel del login y texto de énfasis. */
+  --color-primary: #1f2124;
+  --color-primary-foreground: #f4f5f6;
 
-  /* Superficies y texto. */
-  --color-background: #fdfbfc;
-  --color-foreground: #221e22;
-  --color-muted: #f5f2f4;
-  --color-muted-foreground: #676166;
+  /* Superficies y texto. `foreground` es el negro dominante del logo. */
+  --color-background: #fbfcfc;
+  --color-foreground: #181919;
+  --color-muted: #f2f4f5;
+  --color-muted-foreground: #61666b;
   --color-card: #ffffff;
-  --color-border: #e4e0e2;
-  --color-input: #e4e0e2;
-  --color-ring: #d8017d;
+  --color-border: #dcdee0;
+  --color-input: #dcdee0;
+  --color-ring: #0f6d8a;
 
   /* Realces suaves en tono marca. */
-  --color-accent: #ffe7f1;
-  --color-accent-foreground: #8e0050;
+  --color-accent: #e3f1f6;
+  --color-accent-foreground: #0a4f63;
 
+  /* Único tono cálido que queda: por eso un error se distingue de un vistazo. */
   --color-destructive: #e40014;
 
   --radius: 0.75rem;

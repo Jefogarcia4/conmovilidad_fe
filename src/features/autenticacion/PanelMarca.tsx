@@ -19,9 +19,8 @@ export function PanelMarca() {
       <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/70 to-primary/30" />
 
       <div className="relative flex h-full flex-col justify-between p-12">
-        <span className="inline-flex w-fit items-center rounded-lg bg-background px-3 py-2">
-          <Logo className="h-7" />
-        </span>
+        {/* Sin caja blanca: el emblema es oscuro y se integra en el degradado del panel. */}
+        <Logo tamano="lg" className="text-primary-foreground" />
 
         <div className="space-y-4 text-primary-foreground">
           <h1 className="max-w-md text-balance font-display text-4xl leading-tight font-bold">

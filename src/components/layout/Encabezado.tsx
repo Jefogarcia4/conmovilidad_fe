@@ -46,7 +46,7 @@ export function Encabezado() {
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/home" aria-label="Ir al inicio">
-          <Logo className="h-9" />
+          <Logo tamano="md" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

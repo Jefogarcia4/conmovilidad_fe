@@ -47,7 +47,7 @@ const DIAPOSITIVAS: Diapositiva[] = [
   },
   {
     imagen: '/hero/hero-keys.png',
-    titulo: 'ConMovilidad te acompaña',
+    titulo: 'Autos Galería te acompaña',
     texto: 'Asesoría experta en cada paso de tu compra.',
   },
 ]
