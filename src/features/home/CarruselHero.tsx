@@ -1,54 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import banner1 from '@/assets/banner_1.png'
+import banner2 from '@/assets/banner_2.jpg'
 
 interface Diapositiva {
   imagen: string
-  titulo: string
-  texto: string
+  /** Los banners traen el mensaje impreso, así que el alt lo transcribe. */
+  alt: string
 }
 
-/** Ocho mensajes rotando sobre cuatro fotos: el mismo guion del mockup. */
 const DIAPOSITIVAS: Diapositiva[] = [
   {
-    imagen: '/hero/hero-showroom.png',
-    titulo: 'Tu próximo vehículo te espera',
-    texto: 'Miles de autos, camionetas y motos verificados en un solo lugar.',
+    imagen: banner1,
+    alt: 'Autos Galería: compraventa de carros multimarca y todas las gamas. Motos de mediano y alto cilindraje. Trámites de tránsito a nivel nacional.',
   },
   {
-    imagen: '/hero/hero-road.png',
-    titulo: 'Conduce con confianza',
-    texto: 'Cada vehículo con historial y documentación al día.',
-  },
-  {
-    imagen: '/hero/hero-city.png',
-    titulo: 'Compra y vende sin complicaciones',
-    texto: 'Publica tu vehículo en minutos y llega a miles de compradores.',
-  },
-  {
-    imagen: '/hero/hero-keys.png',
-    titulo: 'Financiación a tu medida',
-    texto: 'Solicita tu crédito y estrena el vehículo de tus sueños.',
-  },
-  {
-    imagen: '/hero/hero-showroom.png',
-    titulo: 'Los mejores precios del mercado',
-    texto: 'Compara y encuentra la oferta perfecta para ti.',
-  },
-  {
-    imagen: '/hero/hero-road.png',
-    titulo: 'Aventura sin límites',
-    texto: 'SUVs y pickups listas para cualquier terreno.',
-  },
-  {
-    imagen: '/hero/hero-city.png',
-    titulo: 'Movilidad urbana inteligente',
-    texto: 'Autos compactos y eficientes para la ciudad.',
-  },
-  {
-    imagen: '/hero/hero-keys.png',
-    titulo: 'ConMovilidad te acompaña',
-    texto: 'Asesoría experta en cada paso de tu compra.',
+    imagen: banner2,
+    alt: 'Autos Galería: compra y venta de vehículos multimarca y todas las gamas, financiamos tu vehículo, pólizas todo riesgo.',
   },
 ]
 
@@ -82,7 +51,8 @@ export function CarruselHero() {
       onMouseLeave={() => setPausado(false)}
       onFocusCapture={() => setPausado(true)}
       onBlurCapture={() => setPausado(false)}
-      className="group relative aspect-[2/1] w-full overflow-hidden bg-primary sm:aspect-[21/9] lg:aspect-[1920/720]"
+      // El aspecto sigue al del banner (1584x400) para que object-contain no deje franjas.
+      className="group relative aspect-[1584/400] w-full overflow-hidden bg-primary"
     >
       {DIAPOSITIVAS.map((d, i) => (
         <div
@@ -95,27 +65,13 @@ export function CarruselHero() {
         >
           <img
             src={d.imagen}
-            alt=""
-            className="size-full object-cover"
+            alt={d.alt}
+            // contain, no cover: el texto impreso del banner no se puede recortar.
+            className="size-full object-contain"
             // Solo la primera bloquea el render inicial; las demás pueden esperar.
             loading={i === 0 ? 'eager' : 'lazy'}
             fetchPriority={i === 0 ? 'high' : 'low'}
           />
-
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/50 to-transparent" />
-
-          <div className="absolute inset-0 flex items-center">
-            <div className="mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-8">
-              <div className="max-w-xl space-y-3 text-primary-foreground sm:space-y-4">
-                <h2 className="text-balance font-display text-2xl leading-tight font-bold sm:text-4xl lg:text-5xl">
-                  {d.titulo}
-                </h2>
-                <p className="max-w-md text-pretty text-sm text-primary-foreground/80 sm:text-lg">
-                  {d.texto}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       ))}
 
