@@ -23,12 +23,14 @@ import {
 } from './componentes'
 
 const esquema = z.object({
+  // Se escribe libre. Solo se vetan los caracteres que romperían el CSV de carga masiva de
+  // usuarios, donde el convenio se identifica por este código (misma regla que la API).
   codigo: z
     .string()
     .trim()
     .min(1, 'El código es obligatorio.')
     .max(30)
-    .regex(/^[A-Za-z0-9-]+$/, 'Solo letras, números y guiones.'),
+    .regex(/^[^,;"\r\n\t]+$/, 'No admite comas, puntos y coma, comillas ni tabulaciones.'),
   nombre: z.string().trim().min(1, 'El nombre es obligatorio.').max(150),
   descripcion: z.string().trim().max(500).optional(),
 })
