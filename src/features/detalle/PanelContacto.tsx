@@ -13,7 +13,7 @@ export function PanelContacto({ vehiculo }: { vehiculo: VehiculoDetalle }) {
   const descripcion = `${vehiculo.marca} ${vehiculo.linea} ${vehiculo.modelo}`
 
   const mensaje = encodeURIComponent(
-    `Hola, vi el ${descripcion} publicado en Autos Galería por ${formatearPrecio(vehiculo.precio)} y me interesa.`,
+    `Hola, vi el ${descripcion} publicado en ConMovilidad por ${formatearPrecio(vehiculo.precio)} y me interesa.`,
   )
 
   return (

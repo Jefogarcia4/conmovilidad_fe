@@ -42,8 +42,9 @@ export function PieDePagina() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div className="space-y-4">
-            {/* Sin caja blanca: el emblema ya es oscuro y se apoya solo sobre el pie. */}
-            <Logo tamano="md" />
+            <span className="inline-flex items-center rounded-lg bg-background px-3 py-2">
+              <Logo className="h-7" />
+            </span>
 
             <p className="max-w-xs text-sm leading-relaxed text-primary-foreground/70">
               El marketplace de vehículos que conecta compradores y vendedores con confianza,
@@ -85,7 +86,7 @@ export function PieDePagina() {
         </div>
 
         <div className="mt-10 flex flex-col gap-2 border-t border-primary-foreground/10 pt-6 text-xs text-primary-foreground/60 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Autos Galería. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} ConMovilidad. Todos los derechos reservados.</p>
           <p>Hecho en Colombia</p>
         </div>
       </div>
