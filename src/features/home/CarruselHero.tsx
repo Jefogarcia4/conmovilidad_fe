@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import banner1 from '@/assets/banner_1.png'
 import banner2 from '@/assets/banner_2.jpg'
+import banner3 from '@/assets/banner_3.png'
 
 interface Diapositiva {
   imagen: string
@@ -18,6 +19,10 @@ const DIAPOSITIVAS: Diapositiva[] = [
   {
     imagen: banner2,
     alt: 'Autos Galería: compra y venta de vehículos multimarca y todas las gamas, financiamos tu vehículo, pólizas todo riesgo.',
+  },
+  {
+    imagen: banner3,
+    alt: '¿Aún no tienes tu Tarjeta Virtual Presente? Actívala ahora y lleva la experiencia de compras online al siguiente nivel. Aplican términos y condiciones.',
   },
 ]
 
@@ -51,8 +56,9 @@ export function CarruselHero() {
       onMouseLeave={() => setPausado(false)}
       onFocusCapture={() => setPausado(true)}
       onBlurCapture={() => setPausado(false)}
-      // El aspecto sigue al del banner (1584x400) para que object-contain no deje franjas.
-      className="group relative aspect-[1584/400] w-full overflow-hidden bg-primary"
+      // Los banners no comparten proporción (3.96:1 los de Autos Galería, 2.83:1 el de Presente).
+      // El contenedor toma la más alta para que ninguno se recorte; el resto queda centrado.
+      className="group relative aspect-[3840/1356] w-full overflow-hidden bg-primary"
     >
       {DIAPOSITIVAS.map((d, i) => (
         <div
@@ -63,11 +69,21 @@ export function CarruselHero() {
             i === actual ? 'opacity-100' : 'pointer-events-none opacity-0',
           )}
         >
+          {/* Relleno: la misma imagen ampliada y desenfocada tapa las franjas que deja
+              object-contain, en vez de dejar barras planas de otro color. */}
+          <img
+            src={d.imagen}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 size-full scale-110 object-cover blur-2xl"
+            loading={i === 0 ? 'eager' : 'lazy'}
+          />
+
           <img
             src={d.imagen}
             alt={d.alt}
             // contain, no cover: el texto impreso del banner no se puede recortar.
-            className="size-full object-contain"
+            className="relative size-full object-contain"
             // Solo la primera bloquea el render inicial; las demás pueden esperar.
             loading={i === 0 ? 'eager' : 'lazy'}
             fetchPriority={i === 0 ? 'high' : 'low'}
