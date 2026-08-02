@@ -47,6 +47,7 @@ export function InformacionVehiculo({ vehiculo }: { vehiculo: VehiculoDetalle })
     ['Clase de vehículo', etiqueta(vehiculo.tipoVehiculo)],
     ['Combustible', etiqueta(vehiculo.combustible)],
     ['Transmisión', vehiculo.transmision ? etiqueta(vehiculo.transmision) : null],
+    ['Tracción', vehiculo.traccion ? etiqueta(vehiculo.traccion) : null],
     [
       'Capacidad',
       vehiculo.capacidadPasajeros ? `${vehiculo.capacidadPasajeros} pasajeros` : null,

@@ -172,10 +172,12 @@ export function SeccionFotografias({ imagenes, urlsPersistidas, onCambio, error 
                 }}
                 className="group relative overflow-hidden rounded-xl border border-border bg-muted"
               >
+                {/* Contenida y no recortada: la previsualización debe mostrar exactamente lo que
+                    verá el comprador, marcas de agua de las esquinas incluidas. */}
                 <img
                   src={resolverUrlImagen(imagen.url)}
                   alt={imagen.nombre}
-                  className="aspect-[4/3] w-full object-cover"
+                  className="aspect-[4/3] w-full object-contain"
                 />
 
                 {i === 0 && (

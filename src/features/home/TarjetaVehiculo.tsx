@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Gauge, ImageOff, MapPin, ShieldCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { VehiculoLista } from '@/api/types'
+import { ImagenCompleta } from '@/components/ui/ImagenCompleta'
 import { useEtiquetasVehiculo } from '@/features/vehiculos/useEtiquetasVehiculo'
 import { formatearKilometraje, formatearPrecio } from '@/lib/formato'
-import { resolverUrlImagen } from '@/lib/imagenes'
 import { cn } from '@/lib/utils'
 
 export function TarjetaVehiculo({ vehiculo }: { vehiculo: VehiculoLista }) {
@@ -21,11 +21,10 @@ export function TarjetaVehiculo({ vehiculo }: { vehiculo: VehiculoLista }) {
       <div className="relative">
         <div className="group/carousel relative aspect-[4/3] overflow-hidden bg-muted">
           {imagenes.length > 0 ? (
-            <img
-              src={resolverUrlImagen(imagenes[indice])}
+            <ImagenCompleta
+              url={imagenes[indice] ?? ''}
               alt={`${vehiculo.marca} ${vehiculo.linea}${vehiculo.version ? ` ${vehiculo.version}` : ''}`}
-              loading="lazy"
-              className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
             <div className="grid size-full place-items-center text-muted-foreground">

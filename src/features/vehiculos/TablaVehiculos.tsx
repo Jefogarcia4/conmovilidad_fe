@@ -62,7 +62,7 @@ export function TablaVehiculos({ vehiculos, onEliminar, eliminandoId }: Props) {
                         src={resolverUrlImagen(v.imagenPrincipal)}
                         alt=""
                         loading="lazy"
-                        className="h-12 w-16 shrink-0 rounded-md bg-muted object-cover"
+                        className="h-12 w-16 shrink-0 rounded-md bg-muted object-contain"
                       />
                     ) : (
                       <span className="grid h-12 w-16 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground">

@@ -24,6 +24,9 @@ export type TipoCombustible =
 
 export type TipoTransmision = 'Manual' | 'Automatica' | 'Secuencial' | 'CVT'
 
+/** Los nombres comerciales («AWD», «4x4», «4x2») llegan como etiqueta del catálogo. */
+export type TipoTraccion = 'Awd' | 'CuatroPorCuatro' | 'CuatroPorDos'
+
 export type TipoDocumento =
   | 'CedulaCiudadania'
   | 'CedulaExtranjeria'
@@ -103,6 +106,8 @@ export interface VehiculoImagen {
 export interface VehiculoDetalle extends Omit<VehiculoLista, 'imagenPrincipal' | 'imagenes'> {
   marcaId: string
   lineaId: string
+  /** Solo viaja en el detalle: el listado no la necesita. */
+  traccion?: TipoTraccion
   cilindraje?: number
   numeroPuertas?: number
   capacidadPasajeros?: number
@@ -154,6 +159,7 @@ export interface OpcionesVehiculo {
   tiposVehiculo: Opcion[]
   combustibles: Opcion[]
   transmisiones: Opcion[]
+  tracciones: Opcion[]
   estados: Opcion[]
 }
 

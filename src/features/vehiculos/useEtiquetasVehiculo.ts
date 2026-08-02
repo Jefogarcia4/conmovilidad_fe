@@ -17,7 +17,12 @@ export function useEtiquetasVehiculo() {
 
   const mapa = new Map<string, string>()
 
-  for (const grupo of [data?.tiposVehiculo, data?.combustibles, data?.transmisiones]) {
+  for (const grupo of [
+    data?.tiposVehiculo,
+    data?.combustibles,
+    data?.transmisiones,
+    data?.tracciones,
+  ]) {
     for (const opcion of grupo ?? []) {
       mapa.set(opcion.nombre, opcion.etiqueta)
     }

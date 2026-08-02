@@ -1,8 +1,8 @@
 import { Eye, ImageOff, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { VehiculoLista } from '@/api/types'
+import { ImagenCompleta } from '@/components/ui/ImagenCompleta'
 import { formatearKilometraje, formatearPrecio } from '@/lib/formato'
-import { resolverUrlImagen } from '@/lib/imagenes'
 import { cn } from '@/lib/utils'
 import { presentarEstado } from './estadoVehiculo'
 
@@ -33,11 +33,9 @@ export function TarjetaMiVehiculo({ vehiculo, onEliminar, eliminando = false }: 
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-muted">
         {vehiculo.imagenPrincipal ? (
-          <img
-            src={resolverUrlImagen(vehiculo.imagenPrincipal)}
+          <ImagenCompleta
+            url={vehiculo.imagenPrincipal}
             alt={`${vehiculo.marca} ${vehiculo.linea}`}
-            loading="lazy"
-            className="size-full object-cover"
           />
         ) : (
           <div className="grid size-full place-items-center text-muted-foreground">

@@ -15,6 +15,9 @@ interface Props {
   errors: FieldErrors<FormularioPublicacion>
 }
 
+/** `Automatica` y `Manual` son los nombres del enum; el usuario lee «Automática» y «Mecánica». */
+const TRANSMISIONES_QUE_SE_CAPTURAN = ['Automatica', 'Manual']
+
 export function SeccionEspecificaciones({ control, errors }: Props) {
   const { data: ciudades } = useQuery({
     queryKey: ['catalogos', 'ciudades'],
@@ -29,6 +32,13 @@ export function SeccionEspecificaciones({ control, errors }: Props) {
   })
 
   const opcionesCiudad = (ciudades ?? []).map((c) => ({ valor: c, etiqueta: c }))
+
+  // El catálogo publica también `Secuencial` y `CVT` —hay vehículos antiguos con esos valores y sus
+  // etiquetas se siguen resolviendo—, pero al publicar el negocio solo distingue estas dos.
+  const opcionesTransmision = TRANSMISIONES_QUE_SE_CAPTURAN.flatMap((nombre) => {
+    const opcion = opciones?.transmisiones.find((t) => t.nombre === nombre)
+    return opcion ? [{ valor: opcion.nombre, etiqueta: opcion.etiqueta }] : []
+  })
 
   return (
     <SeccionFormulario
@@ -162,6 +172,47 @@ export function SeccionEspecificaciones({ control, errors }: Props) {
               textoVacio="Selecciona el combustible"
               invalido={Boolean(errors.combustible)}
               opciones={(opciones?.combustibles ?? []).map((o) => ({
+                valor: o.nombre,
+                etiqueta: o.etiqueta,
+              }))}
+            />
+          )}
+        />
+      </CampoFormulario>
+
+      <CampoFormulario
+        etiqueta="Transmisión"
+        htmlFor="transmision"
+        error={errors.transmision?.message}
+      >
+        <Controller
+          control={control}
+          name="transmision"
+          render={({ field }) => (
+            <ComboBox
+              id="transmision"
+              valor={field.value ?? ''}
+              onCambio={field.onChange}
+              textoVacio="Selecciona la transmisión"
+              invalido={Boolean(errors.transmision)}
+              opciones={opcionesTransmision}
+            />
+          )}
+        />
+      </CampoFormulario>
+
+      <CampoFormulario etiqueta="Tracción" htmlFor="traccion" error={errors.traccion?.message}>
+        <Controller
+          control={control}
+          name="traccion"
+          render={({ field }) => (
+            <ComboBox
+              id="traccion"
+              valor={field.value ?? ''}
+              onCambio={field.onChange}
+              textoVacio="Selecciona la tracción"
+              invalido={Boolean(errors.traccion)}
+              opciones={(opciones?.tracciones ?? []).map((o) => ({
                 valor: o.nombre,
                 etiqueta: o.etiqueta,
               }))}

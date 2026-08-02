@@ -5,7 +5,6 @@ import type { ImagenPublicacion } from './SeccionFotografias'
 /** Campos que la API espera y el formulario no gestiona: se conservan tal como estaban. */
 export interface CamposConservados {
   precioNegociable?: boolean
-  transmision?: string
   numeroPuertas?: number
   descripcion?: string
 }
@@ -32,6 +31,9 @@ export function aPeticionVehiculo(
     precio: datos.precio,
     tipoVehiculo: datos.tipoVehiculo,
     combustible: datos.combustible,
+    // Opcionales: la API rechaza la cadena vacía porque no es un valor del enum.
+    transmision: datos.transmision || undefined,
+    traccion: datos.traccion || undefined,
     cilindraje: datos.cilindraje,
     capacidadPasajeros: datos.capacidadPasajeros,
     ciudad: datos.ciudad,
@@ -66,6 +68,9 @@ export function aValoresFormulario(vehiculo: VehiculoDetalle): FormularioPublica
     kilometraje: vehiculo.kilometraje,
     cilindraje: vehiculo.cilindraje,
     combustible: vehiculo.combustible,
+    // Una API antigua devuelve cadena vacía cuando no hay valor; el combo la trata como «sin elegir».
+    transmision: vehiculo.transmision ?? '',
+    traccion: vehiculo.traccion ?? '',
     capacidadPasajeros: vehiculo.capacidadPasajeros,
     precio: vehiculo.precio,
     vencimientoSoat: vehiculo.vencimientoSoat ?? '',

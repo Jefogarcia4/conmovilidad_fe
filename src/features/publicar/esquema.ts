@@ -50,6 +50,11 @@ export const esquemaPublicacion = z.object({
 
   combustible: z.string().min(1, 'Selecciona el combustible.'),
 
+  /** Nombres del enum de la API (`Manual`, `Automatica`), no las etiquetas que ve el usuario. */
+  transmision: z.string().optional(),
+
+  traccion: z.string().optional(),
+
   capacidadPasajeros: z
     .number()
     .int()
@@ -86,6 +91,8 @@ export const valoresIniciales: Partial<FormularioPublicacion> = {
   ciudadMatricula: '',
   ciudad: '',
   combustible: '',
+  transmision: '',
+  traccion: '',
   vencimientoSoat: '',
   vencimientoTecnomecanica: '',
   soatVencido: false,

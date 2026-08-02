@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ImageOff, ZoomIn } from 'lucide-react'
 import type { VehiculoImagen } from '@/api/types'
+import { ImagenCompleta } from '@/components/ui/ImagenCompleta'
+import { VisorImagenes } from '@/components/ui/VisorImagenes'
 import { resolverUrlImagen } from '@/lib/imagenes'
 import { cn } from '@/lib/utils'
 
@@ -11,11 +13,13 @@ interface Props {
 
 export function GaleriaVehiculo({ imagenes, descripcion }: Props) {
   const [actual, setActual] = useState(0)
+  const [ampliada, setAmpliada] = useState(false)
   const total = imagenes.length
 
-  // Las flechas del teclado son lo que espera cualquiera frente a una galería.
+  // Las flechas del teclado son lo que espera cualquiera frente a una galería. Con el visor
+  // abierto manda el suyo: dos suscriptores avanzarían la foto de dos en dos.
   useEffect(() => {
-    if (total < 2) return
+    if (total < 2 || ampliada) return
 
     const alPulsar = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') setActual((i) => (i - 1 + total) % total)
@@ -24,7 +28,7 @@ export function GaleriaVehiculo({ imagenes, descripcion }: Props) {
 
     window.addEventListener('keydown', alPulsar)
     return () => window.removeEventListener('keydown', alPulsar)
-  }, [total])
+  }, [total, ampliada])
 
   if (total === 0) {
     return (
@@ -39,11 +43,28 @@ export function GaleriaVehiculo({ imagenes, descripcion }: Props) {
   return (
     <div className="space-y-3">
       <div className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-border bg-muted">
-        <img
-          src={resolverUrlImagen(imagenes[actual]?.url)}
-          alt={`${descripcion} — imagen ${actual + 1}`}
-          className="size-full object-cover"
-        />
+        {/* Toda la foto es el disparador del visor: es el gesto que espera cualquiera ante una
+            imagen que se ve pequeña, y el botón de la esquina lo hace descubrible. */}
+        <button
+          type="button"
+          onClick={() => setAmpliada(true)}
+          aria-label={`Ampliar imagen ${actual + 1} de ${total}`}
+          className="absolute inset-0 cursor-zoom-in"
+        >
+          <ImagenCompleta
+            url={imagenes[actual]?.url ?? ''}
+            alt={`${descripcion} — imagen ${actual + 1}`}
+            loading="eager"
+            fetchPriority="high"
+          />
+        </button>
+
+        <span
+          aria-hidden
+          className="pointer-events-none absolute top-3 right-3 grid size-9 place-items-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur transition-opacity group-hover:opacity-100 sm:opacity-0"
+        >
+          <ZoomIn className="size-4" />
+        </span>
 
         {total > 1 && (
           <>
@@ -82,21 +103,35 @@ export function GaleriaVehiculo({ imagenes, descripcion }: Props) {
               aria-current={i === actual}
               onClick={() => setActual(i)}
               className={cn(
-                'aspect-square overflow-hidden rounded-lg border-2 transition-all',
+                'aspect-square overflow-hidden rounded-lg border-2 bg-muted transition-all',
                 i === actual
                   ? 'border-cta ring-2 ring-cta/30'
                   : 'border-transparent opacity-70 hover:opacity-100',
               )}
             >
+              {/* La miniatura es demasiado pequeña para el relleno desenfocado: basta con no
+                  recortar, así se reconoce la foto que se va a abrir. */}
               <img
                 src={resolverUrlImagen(imagen.url)}
                 alt=""
                 loading="lazy"
-                className="size-full object-cover"
+                className="size-full object-contain"
               />
             </button>
           ))}
         </div>
+      )}
+
+      {ampliada && (
+        <VisorImagenes
+          imagenes={imagenes.map((imagen, i) => ({
+            url: imagen.url,
+            alt: `${descripcion} — imagen ${i + 1}`,
+          }))}
+          indiceInicial={actual}
+          onIndiceCambiado={setActual}
+          onCerrar={() => setAmpliada(false)}
+        />
       )}
     </div>
   )

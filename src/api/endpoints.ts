@@ -110,6 +110,7 @@ export interface CrearVehiculoRequest {
   tipoVehiculo: string
   combustible: string
   transmision?: string
+  traccion?: string
   cilindraje?: number
   numeroPuertas?: number
   capacidadPasajeros?: number
