@@ -30,6 +30,17 @@ export function GaleriaVehiculo({ imagenes, descripcion }: Props) {
     return () => window.removeEventListener('keydown', alPulsar)
   }, [total, ampliada])
 
+  // Las fotos vecinas se piden por adelantado: son las que el usuario va a ver a continuación y
+  // así el cambio es inmediato en vez de mostrar un hueco mientras descarga.
+  useEffect(() => {
+    if (total < 2) return
+
+    for (const salto of [1, -1]) {
+      const url = resolverUrlImagen(imagenes[(actual + salto + total) % total]?.url)
+      if (url) new Image().src = url
+    }
+  }, [actual, total, imagenes])
+
   if (total === 0) {
     return (
       <div className="grid aspect-[4/3] place-items-center rounded-2xl border border-border bg-muted text-muted-foreground">
@@ -112,7 +123,7 @@ export function GaleriaVehiculo({ imagenes, descripcion }: Props) {
               {/* La miniatura es demasiado pequeña para el relleno desenfocado: basta con no
                   recortar, así se reconoce la foto que se va a abrir. */}
               <img
-                src={resolverUrlImagen(imagen.url)}
+                src={resolverUrlImagen(imagen.urlMiniatura ?? imagen.url)}
                 alt=""
                 loading="lazy"
                 className="size-full object-contain"

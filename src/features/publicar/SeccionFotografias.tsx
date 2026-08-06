@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils'
 
 export interface ImagenPublicacion {
   url: string
+  /** Se conserva para reenviarla al guardar; sin ella el vehículo perdería su miniatura. */
+  urlMiniatura?: string
   nombre: string
 }
 
@@ -52,7 +54,11 @@ export function SeccionFotografias({ imagenes, urlsPersistidas, onCambio, error 
 
       onCambio([
         ...imagenes,
-        ...resultado.imagenes.map((i) => ({ url: i.url, nombre: i.nombreOriginal })),
+        ...resultado.imagenes.map((i) => ({
+          url: i.url,
+          urlMiniatura: i.urlMiniatura,
+          nombre: i.nombreOriginal,
+        })),
       ])
     } catch (e) {
       setErrorSubida(
@@ -76,7 +82,12 @@ export function SeccionFotografias({ imagenes, urlsPersistidas, onCambio, error 
     if (urlsPersistidas?.includes(imagen.url)) return
 
     // La recién subida sí se borra al instante, para no dejar basura si nunca se publica.
-    await archivos.eliminarImagenVehiculo(imagen.url).catch(() => undefined)
+    // Son dos binarios —grande y miniatura—, así que hay que retirar ambos.
+    await Promise.all(
+      [imagen.url, imagen.urlMiniatura]
+        .filter((url): url is string => Boolean(url))
+        .map((url) => archivos.eliminarImagenVehiculo(url).catch(() => undefined)),
+    )
   }
 
   const reordenar = (desde: number, hasta: number) => {
@@ -175,8 +186,9 @@ export function SeccionFotografias({ imagenes, urlsPersistidas, onCambio, error 
                 {/* Contenida y no recortada: la previsualización debe mostrar exactamente lo que
                     verá el comprador, marcas de agua de las esquinas incluidas. */}
                 <img
-                  src={resolverUrlImagen(imagen.url)}
+                  src={resolverUrlImagen(imagen.urlMiniatura ?? imagen.url)}
                   alt={imagen.nombre}
+                  loading="lazy"
                   className="aspect-[4/3] w-full object-contain"
                 />
 

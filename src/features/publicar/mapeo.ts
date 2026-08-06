@@ -48,7 +48,12 @@ export function aPeticionVehiculo(
     esBlindado: datos.esBlindado,
     ...conservados,
     // El orden de la galería es el que dejó el usuario; la primera es la principal.
-    imagenes: imagenes.map((img, i) => ({ url: img.url, esPrincipal: i === 0, orden: i })),
+    imagenes: imagenes.map((img, i) => ({
+      url: img.url,
+      urlMiniatura: img.urlMiniatura,
+      esPrincipal: i === 0,
+      orden: i,
+    })),
   }
 }
 
@@ -91,6 +96,7 @@ export function aImagenesFormulario(vehiculo: VehiculoDetalle): ImagenPublicacio
     .sort((a, b) => a.orden - b.orden)
     .map((imagen) => ({
       url: imagen.url,
+      urlMiniatura: imagen.urlMiniatura,
       nombre: decodeURIComponent(imagen.url.split('/').pop() ?? 'Imagen del vehículo'),
     }))
 }

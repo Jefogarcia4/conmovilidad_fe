@@ -47,6 +47,9 @@ export function ImagenCompleta({
         alt={alt}
         loading={loading}
         fetchPriority={fetchPriority}
+        // Descodificar fuera del hilo principal: con doce tarjetas en la grilla, hacerlo en línea
+        // bloquea el desplazamiento mientras aparecen.
+        decoding="async"
         className={cn('absolute inset-0 size-full object-contain', className)}
       />
     </>

@@ -82,6 +82,7 @@ export const vehiculos = {
 
 export interface ImagenSubida {
   url: string
+  urlMiniatura: string
   ruta: string
   tamanoBytes: number
   nombreOriginal: string
@@ -128,7 +129,7 @@ export interface CrearVehiculoRequest {
   tecnomecanicaVencida?: boolean
   descripcion?: string
   publicarInmediatamente?: boolean
-  imagenes?: { url: string; esPrincipal: boolean; orden: number }[]
+  imagenes?: { url: string; urlMiniatura?: string; esPrincipal: boolean; orden: number }[]
 }
 
 /**

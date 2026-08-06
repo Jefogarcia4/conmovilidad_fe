@@ -86,8 +86,9 @@ export interface VehiculoLista {
   ciudad?: string
   esBlindado: boolean
   estado: EstadoVehiculo
+  /** Miniatura: el listado solo pinta tarjetas pequeñas. */
   imagenPrincipal?: string
-  /** Galería completa y ordenada, para el carrusel de la tarjeta. */
+  /** Galería completa y ordenada —también en miniatura—, para el carrusel de la tarjeta. */
   imagenes: string[]
   empresaNombre: string
   publicadoPor: string
@@ -97,7 +98,10 @@ export interface VehiculoLista {
 
 export interface VehiculoImagen {
   id: string
+  /** Versión grande: galería del detalle y visor con zoom. */
   url: string
+  /** Versión ligera. Nula en las imágenes anteriores a la optimización: se cae a `url`. */
+  urlMiniatura?: string
   esPrincipal: boolean
   orden: number
 }
