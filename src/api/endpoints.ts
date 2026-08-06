@@ -2,6 +2,7 @@ import { api, queryString } from './cliente'
 import type {
   AuthResponse,
   Empresa,
+  FiltrosCatalogo,
   Linea,
   Marca,
   OpcionesVehiculo,
@@ -62,6 +63,9 @@ export const vehiculos = {
 
   mios: (filtro: FiltroVehiculos = {}) =>
     api.get<ResultadoPaginado<VehiculoLista>>(`/vehiculos/mis-vehiculos${queryString(filtro)}`),
+
+  /** Valores presentes en el catálogo, para poblar los desplegables del buscador. */
+  filtrosCatalogo: () => api.get<FiltrosCatalogo>('/vehiculos/catalogo/filtros'),
 
   detalle: (id: string) => api.get<VehiculoDetalle>(`/vehiculos/${id}`),
 

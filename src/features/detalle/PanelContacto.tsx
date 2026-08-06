@@ -2,6 +2,13 @@ import { Building2, HandCoins, MapPin, MessageCircle, Phone, User } from 'lucide
 import type { VehiculoDetalle } from '@/api/types'
 import { formatearPrecio } from '@/lib/formato'
 
+/**
+ * Portal de servicios digitales de Presente, donde se tramita el crédito. El `redirect_uri` lo
+ * fija el propio portal: primero autentica la identidad y luego devuelve al usuario allí.
+ */
+const URL_FINANCIACION =
+  'https://gestionidentidad.presente.com.co/?redirect_uri=https://apps.presente.com.co/servicios-digitales-presente/'
+
 /** Deja solo dígitos y antepone el indicativo de Colombia si el número viene sin él. */
 function aFormatoWhatsApp(telefono: string): string {
   const digitos = telefono.replace(/\D/g, '')
@@ -94,15 +101,15 @@ export function PanelContacto({ vehiculo }: { vehiculo: VehiculoDetalle }) {
             </p>
           )}
 
-          <button
-            type="button"
-            disabled
-            title="Disponible próximamente"
-            className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-sm font-medium transition-all hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+          <a
+            href={URL_FINANCIACION}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-sm font-medium transition-all hover:bg-muted"
           >
             <HandCoins className="size-4" aria-hidden />
             Solicitar Financiación
-          </button>
+          </a>
         </div>
       </div>
     </aside>

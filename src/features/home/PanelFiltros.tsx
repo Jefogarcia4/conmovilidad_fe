@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { SlidersHorizontal } from 'lucide-react'
-import { catalogos } from '@/api/endpoints'
+import { vehiculos } from '@/api/endpoints'
 import { CampoPrecio } from '@/components/ui/CampoPrecio'
 import { ComboBox } from '@/components/ui/ComboBox'
 
@@ -42,29 +42,21 @@ function CampoFiltro({
 }
 
 export function PanelFiltros({ valores, onCambio, totalResultados }: Props) {
-  const { data: marcas } = useQuery({
-    queryKey: ['catalogos', 'marcas'],
-    queryFn: catalogos.marcas,
-    staleTime: Infinity,
+  /*
+   * Las tres listas salen del propio catálogo, no de los datos maestros. Alimentar la ciudad
+   * con las empresas del convenio dejaba fuera del filtro cualquier vehículo publicado en otra
+   * ciudad —el formulario ofrece diez— y sobraban marcas sin un solo vehículo.
+   */
+  const { data: opciones } = useQuery({
+    queryKey: ['vehiculos', 'catalogo', 'filtros'],
+    queryFn: vehiculos.filtrosCatalogo,
   })
 
-  // Las líneas se piden solo cuando hay marca elegida: el catálogo completo son cientos de filas.
-  const { data: lineas } = useQuery({
-    queryKey: ['catalogos', 'lineas', valores.marcaId],
-    queryFn: () => catalogos.lineas(valores.marcaId),
-    enabled: Boolean(valores.marcaId),
-    staleTime: Infinity,
-  })
+  const ciudades = opciones?.ciudades ?? []
+  const marcas = opciones?.marcas ?? []
 
-  // No hay catálogo de ciudades en la API: se derivan de las empresas del convenio,
-  // que es exactamente el universo de ciudades donde este usuario puede ver vehículos.
-  const { data: empresas } = useQuery({
-    queryKey: ['catalogos', 'empresas'],
-    queryFn: catalogos.empresas,
-    staleTime: Infinity,
-  })
-
-  const ciudades = [...new Set((empresas ?? []).map((e) => e.ciudad).filter(Boolean))].sort()
+  // Las líneas llegan todas juntas; el desplegable muestra solo las de la marca elegida.
+  const lineas = (opciones?.lineas ?? []).filter((l) => l.marcaId === valores.marcaId)
 
   const actualizar = (cambio: Partial<ValoresFiltro>) => onCambio({ ...valores, ...cambio })
 
@@ -90,7 +82,7 @@ export function PanelFiltros({ valores, onCambio, totalResultados }: Props) {
             textoVacio="Todas las ciudades"
             valor={valores.ciudad ?? ''}
             onCambio={(v) => actualizar({ ciudad: v || undefined })}
-            opciones={ciudades.map((c) => ({ valor: c!, etiqueta: c! }))}
+            opciones={ciudades.map((c) => ({ valor: c, etiqueta: c }))}
           />
         </CampoFiltro>
 
@@ -101,7 +93,7 @@ export function PanelFiltros({ valores, onCambio, totalResultados }: Props) {
             valor={valores.marcaId ?? ''}
             // Cambiar de marca invalida la línea elegida: pertenecía a la marca anterior.
             onCambio={(v) => actualizar({ marcaId: v || undefined, lineaId: undefined })}
-            opciones={(marcas ?? []).map((m) => ({ valor: m.id, etiqueta: m.nombre }))}
+            opciones={marcas.map((m) => ({ valor: m.id, etiqueta: m.nombre }))}
           />
         </CampoFiltro>
 
@@ -112,7 +104,7 @@ export function PanelFiltros({ valores, onCambio, totalResultados }: Props) {
             valor={valores.lineaId ?? ''}
             onCambio={(v) => actualizar({ lineaId: v || undefined })}
             deshabilitado={!valores.marcaId}
-            opciones={(lineas ?? []).map((l) => ({ valor: l.id, etiqueta: l.nombre }))}
+            opciones={lineas.map((l) => ({ valor: l.id, etiqueta: l.nombre }))}
           />
         </CampoFiltro>
 

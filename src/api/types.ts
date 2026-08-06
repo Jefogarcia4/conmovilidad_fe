@@ -142,6 +142,13 @@ export interface Linea {
   nombre: string
 }
 
+/** Opciones del buscador, calculadas sobre los vehículos que hay realmente en el catálogo. */
+export interface FiltrosCatalogo {
+  ciudades: string[]
+  marcas: Marca[]
+  lineas: Linea[]
+}
+
 export interface Empresa {
   id: string
   nombre: string
