@@ -84,8 +84,11 @@ export function HomePage() {
                 isFetching && 'opacity-60',
               )}
             >
-              {data.items.map((v) => (
-                <TarjetaVehiculo key={v.id} vehiculo={v} />
+              {data.items.map((v, i) => (
+                // La primera fila entra sin diferir: es lo que se ve al abrir el catálogo, y
+                // `loading="lazy"` en esas cuatro solo retrasa la imagen que marca la sensación
+                // de rapidez. El resto sigue perezoso.
+                <TarjetaVehiculo key={v.id} vehiculo={v} prioritaria={i < 4} />
               ))}
             </div>
           ) : (

@@ -15,12 +15,8 @@ import { Logo } from '@/components/ui/Logo'
 const esquema = z
   .object({
     passwordActual: z.string().min(1, 'Ingresa la contraseña con la que entraste.'),
-    passwordNuevo: z
-      .string()
-      .min(8, 'La contraseña debe tener al menos 8 caracteres.')
-      .regex(/[A-Z]/, 'Debe incluir al menos una letra mayúscula.')
-      .regex(/[a-z]/, 'Debe incluir al menos una letra minúscula.')
-      .regex(/[0-9]/, 'Debe incluir al menos un número.'),
+    // Solo longitud: sin exigencias de composición. Debe coincidir con `ReglasPassword` de la API.
+    passwordNuevo: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres.'),
     confirmacion: z.string().min(1, 'Repite la contraseña nueva.'),
     emailRecuperacion: z
       .string()

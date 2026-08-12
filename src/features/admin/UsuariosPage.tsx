@@ -39,12 +39,8 @@ const TIPOS_DOCUMENTO: { valor: TipoDocumento; etiqueta: string }[] = [
   { valor: 'Ppt', etiqueta: 'Permiso por Protección Temporal' },
 ]
 
-const reglasPassword = z
-  .string()
-  .min(8, 'Debe tener al menos 8 caracteres.')
-  .regex(/[A-Z]/, 'Debe incluir una mayúscula.')
-  .regex(/[a-z]/, 'Debe incluir una minúscula.')
-  .regex(/[0-9]/, 'Debe incluir un número.')
+// Solo longitud: sin exigencias de composición. Debe coincidir con `ReglasPassword` de la API.
+const reglasPassword = z.string().min(6, 'Debe tener al menos 6 caracteres.')
 
 const esquemaBase = {
   nombres: z.string().trim().min(1, 'Los nombres son obligatorios.').max(100),

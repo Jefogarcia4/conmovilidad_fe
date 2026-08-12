@@ -2,30 +2,98 @@ import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Gauge, ImageOff, MapPin, ShieldCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { VehiculoLista } from '@/api/types'
-import { ImagenCompleta } from '@/components/ui/ImagenCompleta'
 import { useEtiquetasVehiculo } from '@/features/vehiculos/useEtiquetasVehiculo'
 import { formatearKilometraje, formatearPrecio } from '@/lib/formato'
+import { resolverUrlImagen } from '@/lib/imagenes'
 import { cn } from '@/lib/utils'
 
-export function TarjetaVehiculo({ vehiculo }: { vehiculo: VehiculoLista }) {
+/** A partir de aquí los puntos dejan de leerse y se cambian por un contador. */
+const MAXIMO_PUNTOS = 8
+
+interface Props {
+  vehiculo: VehiculoLista
+  /**
+   * Las primeras tarjetas de la grilla se cargan sin diferir: son las que el usuario ve al
+   * entrar, y dejarlas perezosas retrasa la única imagen que de verdad importa para la
+   * sensación de rapidez.
+   */
+  prioritaria?: boolean
+}
+
+export function TarjetaVehiculo({ vehiculo, prioritaria = false }: Props) {
   const etiqueta = useEtiquetasVehiculo()
-  const imagenes = vehiculo.imagenes.length > 0 ? vehiculo.imagenes : []
+  const imagenes = vehiculo.imagenes
+  const total = imagenes.length
   const [indice, setIndice] = useState(0)
 
+  /*
+   * Al montar solo existe la foto visible: una grilla de doce tarjetas que trajera la galería
+   * completa de cada vehículo pediría cientos de imágenes de golpe. Basta con que el puntero
+   * roce la tarjeta para montar también la anterior y la siguiente, que es mucho antes de que
+   * llegue el clic.
+   */
+  const [armado, setArmado] = useState(false)
+
+  const armar = () => setArmado(true)
+
+  /*
+   * Las tres fotos conviven en el DOM y se cruzan por opacidad. Antes había una sola `<img>` y
+   * cambiar su `src` obligaba a descargar y decodificar en el instante del clic: de ahí el salto
+   * y el hueco en blanco al pasar de foto. La ventana se limita a tres para que recorrer una
+   * galería larga no acumule veinte imágenes decodificadas por tarjeta.
+   */
+  const visibles = armado && total > 1
+    ? [...new Set([(indice - 1 + total) % total, indice, (indice + 1) % total])]
+    : [indice]
+
   const mover = (delta: number) => {
-    setIndice((i) => (i + delta + imagenes.length) % imagenes.length)
+    armar()
+    setIndice((i) => (i + delta + total) % total)
   }
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <div className="relative">
-        <div className="group/carousel relative aspect-[4/3] overflow-hidden bg-muted">
-          {imagenes.length > 0 ? (
-            <ImagenCompleta
-              url={imagenes[indice] ?? ''}
-              alt={`${vehiculo.marca} ${vehiculo.linea}${vehiculo.version ? ` ${vehiculo.version}` : ''}`}
-              className="transition-transform duration-500 group-hover:scale-105"
-            />
+        <div
+          onPointerEnter={armar}
+          onFocusCapture={armar}
+          className="group/carousel relative aspect-[4/3] overflow-hidden bg-muted"
+        >
+          {total > 0 ? (
+            <>
+              {/* Relleno: la misma foto ampliada y desenfocada tapa las franjas que deja
+                  `object-contain`. Solo se pinta la de la imagen visible, porque el desenfoque
+                  es lo más caro de la tarjeta y multiplicarlo por tres no aporta nada. */}
+              <img
+                src={resolverUrlImagen(imagenes[indice])}
+                alt=""
+                aria-hidden
+                loading={prioritaria ? 'eager' : 'lazy'}
+                className="absolute inset-0 size-full scale-110 object-cover blur-2xl"
+              />
+
+              {visibles.map((i) => (
+                <img
+                  key={imagenes[i]}
+                  src={resolverUrlImagen(imagenes[i])}
+                  alt={
+                    i === indice
+                      ? `${vehiculo.marca} ${vehiculo.linea}${vehiculo.version ? ` ${vehiculo.version}` : ''}`
+                      : ''
+                  }
+                  aria-hidden={i !== indice}
+                  // Las vecinas se montan a propósito para adelantarlas: diferirlas las dejaría
+                  // sin descargar hasta el clic, que es justo lo que se quiere evitar.
+                  loading={prioritaria || i !== indice ? 'eager' : 'lazy'}
+                  fetchPriority={prioritaria && i === indice ? 'high' : 'auto'}
+                  decoding="async"
+                  className={cn(
+                    'absolute inset-0 size-full object-contain transition-[opacity,transform] duration-300 group-hover:scale-105',
+                    i === indice ? 'opacity-100' : 'opacity-0',
+                  )}
+                />
+              ))}
+            </>
           ) : (
             <div className="grid size-full place-items-center text-muted-foreground">
               <ImageOff className="size-8" aria-label="Sin imagen" />
@@ -33,7 +101,7 @@ export function TarjetaVehiculo({ vehiculo }: { vehiculo: VehiculoLista }) {
           )}
 
           {/* Las flechas solo tienen sentido cuando hay más de una foto. */}
-          {imagenes.length > 1 && (
+          {total > 1 && (
             <>
               <button
                 type="button"
@@ -53,17 +121,25 @@ export function TarjetaVehiculo({ vehiculo }: { vehiculo: VehiculoLista }) {
                 <ChevronRight className="size-4" aria-hidden />
               </button>
 
-              <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
-                {imagenes.map((url, i) => (
-                  <span
-                    key={url}
-                    className={cn(
-                      'h-1.5 rounded-full transition-all',
-                      i === indice ? 'w-4 bg-primary-foreground' : 'w-1.5 bg-primary-foreground/50',
-                    )}
-                  />
-                ))}
-              </div>
+              {/* Una galería larga llenaría el ancho de la tarjeta de puntos ilegibles; pasado
+                  ese punto el contador dice lo mismo en menos espacio. */}
+              {total <= MAXIMO_PUNTOS ? (
+                <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
+                  {imagenes.map((url, i) => (
+                    <span
+                      key={url}
+                      className={cn(
+                        'h-1.5 rounded-full transition-all',
+                        i === indice ? 'w-4 bg-primary-foreground' : 'w-1.5 bg-primary-foreground/50',
+                      )}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <span className="absolute right-2 bottom-2 rounded-full bg-primary/80 px-2 py-0.5 text-[0.7rem] font-medium text-primary-foreground tabular-nums backdrop-blur">
+                  {indice + 1} / {total}
+                </span>
+              )}
             </>
           )}
         </div>
