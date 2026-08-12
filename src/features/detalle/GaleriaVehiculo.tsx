@@ -4,6 +4,7 @@ import type { VehiculoImagen } from '@/api/types'
 import { ImagenCompleta } from '@/components/ui/ImagenCompleta'
 import { VisorImagenes } from '@/components/ui/VisorImagenes'
 import { resolverUrlImagen } from '@/lib/imagenes'
+import { useDeslizamiento } from '@/lib/useDeslizamiento'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -41,6 +42,14 @@ export function GaleriaVehiculo({ imagenes, descripcion }: Props) {
     }
   }, [actual, total, imagenes])
 
+  const mover = (delta: number) => setActual((i) => (i + delta + total) % total)
+
+  const gestos = useDeslizamiento({
+    onSiguiente: () => mover(1),
+    onAnterior: () => mover(-1),
+    activo: total > 1,
+  })
+
   if (total === 0) {
     return (
       <div className="grid aspect-[4/3] place-items-center rounded-2xl border border-border bg-muted text-muted-foreground">
@@ -49,11 +58,13 @@ export function GaleriaVehiculo({ imagenes, descripcion }: Props) {
     )
   }
 
-  const mover = (delta: number) => setActual((i) => (i + delta + total) % total)
-
   return (
     <div className="space-y-3">
-      <div className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-border bg-muted">
+      <div
+        {...gestos}
+        // `touch-pan-y` deja el desplazamiento vertical al navegador y nos reserva el lateral.
+        className="group relative aspect-[4/3] touch-pan-y overflow-hidden rounded-2xl border border-border bg-muted"
+      >
         {/* Toda la foto es el disparador del visor: es el gesto que espera cualquiera ante una
             imagen que se ve pequeña, y el botón de la esquina lo hace descubrible. */}
         <button

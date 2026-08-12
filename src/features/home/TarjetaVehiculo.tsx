@@ -5,10 +5,25 @@ import type { VehiculoLista } from '@/api/types'
 import { useEtiquetasVehiculo } from '@/features/vehiculos/useEtiquetasVehiculo'
 import { formatearKilometraje, formatearPrecio } from '@/lib/formato'
 import { resolverUrlImagen } from '@/lib/imagenes'
+import { useDeslizamiento } from '@/lib/useDeslizamiento'
 import { cn } from '@/lib/utils'
 
 /** A partir de aquí los puntos dejan de leerse y se cambian por un contador. */
 const MAXIMO_PUNTOS = 8
+
+/*
+ * Las flechas se revelan al pasar el puntero, pero en una pantalla táctil no hay `hover` y
+ * quedaban invisibles: el carrusel del catálogo parecía una foto fija. Con `pointer-coarse` se
+ * muestran siempre en los dispositivos que se manejan con el dedo —móvil y tablet, también en
+ * horizontal, que es lo que se escapaba de un simple `max-sm`— y allí crecen a 44 px, el mínimo
+ * que se puede pulsar con fiabilidad.
+ */
+const CLASES_FLECHA = cn(
+  'absolute top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full',
+  'bg-background/80 text-foreground shadow-sm backdrop-blur transition-opacity hover:bg-background',
+  'opacity-0 group-hover/carousel:opacity-100 focus-visible:opacity-100',
+  'pointer-coarse:size-11 pointer-coarse:opacity-100',
+)
 
 interface Props {
   vehiculo: VehiculoLista
@@ -51,13 +66,21 @@ export function TarjetaVehiculo({ vehiculo, prioritaria = false }: Props) {
     setIndice((i) => (i + delta + total) % total)
   }
 
+  const gestos = useDeslizamiento({
+    onSiguiente: () => mover(1),
+    onAnterior: () => mover(-1),
+    activo: total > 1,
+  })
+
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <div className="relative">
         <div
+          {...gestos}
           onPointerEnter={armar}
           onFocusCapture={armar}
-          className="group/carousel relative aspect-[4/3] overflow-hidden bg-muted"
+          // `touch-pan-y` deja el desplazamiento vertical al navegador y nos reserva el lateral.
+          className="group/carousel relative aspect-[4/3] touch-pan-y overflow-hidden bg-muted"
         >
           {total > 0 ? (
             <>
@@ -87,6 +110,9 @@ export function TarjetaVehiculo({ vehiculo, prioritaria = false }: Props) {
                   loading={prioritaria || i !== indice ? 'eager' : 'lazy'}
                   fetchPriority={prioritaria && i === indice ? 'high' : 'auto'}
                   decoding="async"
+                  // Con el ratón, arrastrar la foto activaría el arrastre nativo de imagen en
+                  // vez de pasar a la siguiente.
+                  draggable={false}
                   className={cn(
                     'absolute inset-0 size-full object-contain transition-[opacity,transform] duration-300 group-hover:scale-105',
                     i === indice ? 'opacity-100' : 'opacity-0',
@@ -107,18 +133,18 @@ export function TarjetaVehiculo({ vehiculo, prioritaria = false }: Props) {
                 type="button"
                 aria-label="Imagen anterior"
                 onClick={() => mover(-1)}
-                className="absolute top-1/2 left-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground opacity-0 shadow-sm backdrop-blur transition-opacity group-hover/carousel:opacity-100 focus-visible:opacity-100 hover:bg-background"
+                className={cn(CLASES_FLECHA, 'left-2')}
               >
-                <ChevronLeft className="size-4" aria-hidden />
+                <ChevronLeft className="size-4 pointer-coarse:size-5" aria-hidden />
               </button>
 
               <button
                 type="button"
                 aria-label="Imagen siguiente"
                 onClick={() => mover(1)}
-                className="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground opacity-0 shadow-sm backdrop-blur transition-opacity group-hover/carousel:opacity-100 focus-visible:opacity-100 hover:bg-background"
+                className={cn(CLASES_FLECHA, 'right-2')}
               >
-                <ChevronRight className="size-4" aria-hidden />
+                <ChevronRight className="size-4 pointer-coarse:size-5" aria-hidden />
               </button>
 
               {/* Una galería larga llenaría el ancho de la tarjeta de puntos ilegibles; pasado

@@ -22,6 +22,10 @@ const ESCALA_MAXIMA = 6
 /** Salto de los botones y del doble clic; la rueda usa un factor continuo. */
 const PASO = 1.6
 
+/** Recorrido lateral que cambia de foto cuando la imagen no está ampliada. */
+const UMBRAL_DESLIZAMIENTO = 45
+const MS_GOLPE_RAPIDO = 250
+
 interface Vista {
   escala: number
   x: number
@@ -171,6 +175,9 @@ export function VisorImagenes({
   const pellizco = useRef<number | null>(null)
   const [arrastrando, setArrastrando] = useState(false)
 
+  /** Origen del gesto lateral, solo mientras la imagen no está ampliada. */
+  const inicioDeslizamiento = useRef<{ x: number; y: number; t: number } | null>(null)
+
   const distancia = () => {
     const [a, b] = [...punteros.current.values()]
     return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0
@@ -184,8 +191,16 @@ export function VisorImagenes({
   const alBajarPuntero = (e: React.PointerEvent) => {
     punteros.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
 
+    // Sin zoom el arrastre no tiene nada que desplazar, así que ese mismo gesto pasa de foto.
+    // Con la imagen ampliada manda el desplazamiento: ahí arrastrar sirve para recorrerla.
+    inicioDeslizamiento.current =
+      punteros.current.size === 1 && vista.escala === ESCALA_MINIMA
+        ? { x: e.clientX, y: e.clientY, t: e.timeStamp }
+        : null
+
     if (punteros.current.size === 2) {
       pellizco.current = distancia()
+      inicioDeslizamiento.current = null
       setArrastrando(false)
     } else if (vista.escala > ESCALA_MINIMA) {
       setArrastrando(true)
@@ -225,6 +240,24 @@ export function VisorImagenes({
     punteros.current.delete(e.pointerId)
     if (punteros.current.size < 2) pellizco.current = null
     if (punteros.current.size === 0) setArrastrando(false)
+
+    const desde = inicioDeslizamiento.current
+    inicioDeslizamiento.current = null
+
+    if (!desde || total < 2 || vista.escala > ESCALA_MINIMA) return
+
+    const dx = e.clientX - desde.x
+    const dy = e.clientY - desde.y
+    const recorrido = Math.abs(dx)
+
+    // Mismo criterio que el carrusel del catálogo: eje dominante, y un golpe rápido cuenta
+    // aunque sea corto.
+    if (recorrido <= Math.abs(dy)) return
+    if (recorrido < UMBRAL_DESLIZAMIENTO && !(e.timeStamp - desde.t < MS_GOLPE_RAPIDO && recorrido > 20)) {
+      return
+    }
+
+    irA(dx < 0 ? 1 : -1)
   }
 
   if (!imagen) return null

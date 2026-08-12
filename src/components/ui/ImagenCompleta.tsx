@@ -47,6 +47,9 @@ export function ImagenCompleta({
         alt={alt}
         loading={loading}
         fetchPriority={fetchPriority}
+        // Deja libre el arrastre lateral de los carruseles: sin esto el ratón inicia el arrastre
+        // nativo de imagen en cuanto se mueve sobre ella.
+        draggable={false}
         // Descodificar fuera del hilo principal: con doce tarjetas en la grilla, hacerlo en línea
         // bloquea el desplazamiento mientras aparecen.
         decoding="async"

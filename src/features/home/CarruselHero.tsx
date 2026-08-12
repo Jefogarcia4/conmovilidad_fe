@@ -95,7 +95,7 @@ export function CarruselHero() {
         type="button"
         aria-label="Anterior"
         onClick={() => ir(actual - 1)}
-        className="absolute top-1/2 left-3 z-10 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/25 text-primary-foreground opacity-0 backdrop-blur transition-[opacity,background-color] duration-300 group-hover:opacity-100 hover:bg-background/40 focus-visible:opacity-100 max-sm:opacity-100 sm:left-6"
+        className="absolute top-1/2 left-3 z-10 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/25 text-primary-foreground opacity-0 backdrop-blur transition-[opacity,background-color] duration-300 group-hover:opacity-100 hover:bg-background/40 focus-visible:opacity-100 pointer-coarse:opacity-100 sm:left-6"
       >
         <ChevronLeft className="size-5" aria-hidden />
       </button>
@@ -104,7 +104,7 @@ export function CarruselHero() {
         type="button"
         aria-label="Siguiente"
         onClick={() => ir(actual + 1)}
-        className="absolute top-1/2 right-3 z-10 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/25 text-primary-foreground opacity-0 backdrop-blur transition-[opacity,background-color] duration-300 group-hover:opacity-100 hover:bg-background/40 focus-visible:opacity-100 max-sm:opacity-100 sm:right-6"
+        className="absolute top-1/2 right-3 z-10 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/25 text-primary-foreground opacity-0 backdrop-blur transition-[opacity,background-color] duration-300 group-hover:opacity-100 hover:bg-background/40 focus-visible:opacity-100 pointer-coarse:opacity-100 sm:right-6"
       >
         <ChevronRight className="size-5" aria-hidden />
       </button>
