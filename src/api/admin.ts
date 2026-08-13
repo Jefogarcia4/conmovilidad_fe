@@ -114,8 +114,10 @@ export interface ResultadoImportacion {
   exito: boolean
   filasLeidas: number
   usuariosCreados: number
+  /** Primeros errores encontrados; el total va en `totalErrores`. */
   errores: ErrorImportacion[]
-  /** Nombre y documento de cada usuario dado de alta. */
+  totalErrores: number
+  /** Nombre y documento de los primeros usuarios dados de alta; el total, en `usuariosCreados`. */
   creados: string[]
 }
 

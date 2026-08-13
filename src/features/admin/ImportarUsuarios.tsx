@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, Download, FileSpreadsheet, Upload } from 'lucide-react'
+import { CheckCircle2, Download, FileSpreadsheet, Loader2, Upload } from 'lucide-react'
 import { adminUsuarios, type ResultadoImportacion } from '@/api/admin'
 import { Alerta } from '@/components/ui/Alerta'
 import { Boton } from '@/components/ui/Boton'
@@ -157,6 +157,19 @@ export function ImportarUsuarios({ onCerrar }: { onCerrar: () => void }) {
               className="sr-only"
               onChange={(e) => elegir(e.target.files)}
             />
+
+            {/*
+              Cifrar cada contraseña es deliberadamente lento, así que un archivo de cientos de
+              filas tarda minutos. Sin avisar, el silencio se interpreta como que se colgó y la
+              gente recarga la página a mitad del proceso.
+            */}
+            {importar.isPending && (
+              <p className="mt-3 flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 shrink-0 animate-spin" aria-hidden />
+                Creando los usuarios. Con archivos grandes puede tardar varios minutos: no cierres
+                ni recargues esta ventana.
+              </p>
+            )}
           </section>
         )}
 
@@ -165,8 +178,10 @@ export function ImportarUsuarios({ onCerrar }: { onCerrar: () => void }) {
         {resultado && !resultado.exito && resultado.errores.length > 0 && (
           <section>
             <Alerta>
-              No se creó ningún usuario. Corrige {resultado.errores.length}{' '}
-              {resultado.errores.length === 1 ? 'error' : 'errores'} y vuelve a cargar el archivo.
+              No se creó ningún usuario. Corrige {resultado.totalErrores}{' '}
+              {resultado.totalErrores === 1 ? 'error' : 'errores'} y vuelve a cargar el archivo.
+              {resultado.totalErrores > resultado.errores.length &&
+                ` Abajo se muestran los ${resultado.errores.length} primeros.`}
             </Alerta>
 
             {/* La tabla se desplaza sola: con archivos grandes la lista de errores es larga. */}
@@ -213,6 +228,14 @@ export function ImportarUsuarios({ onCerrar }: { onCerrar: () => void }) {
                 </li>
               ))}
             </ul>
+
+            {/* Con miles de altas la lista viene recortada: se dice, para que nadie piense que
+                se crearon solo los que ve. */}
+            {resultado.usuariosCreados > resultado.creados.length && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                y {resultado.usuariosCreados - resultado.creados.length} más
+              </p>
+            )}
           </section>
         )}
       </div>
