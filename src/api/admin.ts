@@ -1,5 +1,5 @@
 import { api, queryString } from './cliente'
-import type { RolUsuario, TipoDocumento } from './types'
+import type { ResultadoPaginado, RolUsuario, TipoDocumento } from './types'
 
 export interface ConvenioAdmin {
   id: string
@@ -119,9 +119,17 @@ export interface ResultadoImportacion {
   creados: string[]
 }
 
+export interface FiltroUsuarios {
+  convenioId?: string
+  empresaId?: string
+  incluirInactivos?: boolean
+  pagina?: number
+  tamanoPagina?: number
+}
+
 export const adminUsuarios = {
-  listar: (filtro: { convenioId?: string; empresaId?: string } = {}) =>
-    api.get<UsuarioAdmin[]>(`/admin/usuarios${queryString(filtro)}`),
+  listar: (filtro: FiltroUsuarios = {}) =>
+    api.get<ResultadoPaginado<UsuarioAdmin>>(`/admin/usuarios${queryString(filtro)}`),
   crear: (datos: CrearUsuarioRequest) => api.post<UsuarioAdmin>('/admin/usuarios', datos),
   actualizar: (id: string, datos: ActualizarUsuarioRequest) =>
     api.put<UsuarioAdmin>(`/admin/usuarios/${id}`, datos),

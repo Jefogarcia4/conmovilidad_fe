@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { KeyRound, Loader2, Pencil, Plus, Power, PowerOff, Upload } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,6 +13,7 @@ import { CampoFormulario } from '@/components/ui/CampoFormulario'
 import { ComboBox } from '@/components/ui/ComboBox'
 import { clasesControl } from '@/components/ui/estilosControl'
 import { Modal } from '@/components/ui/Modal'
+import { Paginacion } from '@/components/ui/Paginacion'
 import { cn } from '@/lib/utils'
 import {
   BotonFila,
@@ -24,6 +25,9 @@ import {
   TablaAdmin,
 } from './componentes'
 import { ImportarUsuarios } from './ImportarUsuarios'
+
+/** Filas por página. Entran de sobra en una pantalla sin obligar a desplazarse. */
+const POR_PAGINA = 15
 
 const ROLES: { valor: RolUsuario; etiqueta: string }[] = [
   { valor: 'Asesor', etiqueta: 'Asesor' },
@@ -67,6 +71,7 @@ type FormularioCrear = z.infer<typeof esquemaCrear>
 export function UsuariosPage() {
   const clienteConsultas = useQueryClient()
   const [convenioFiltro, setConvenioFiltro] = useState('')
+  const [pagina, setPagina] = useState(1)
   const [editando, setEditando] = useState<UsuarioAdmin | null>(null)
   const [creando, setCreando] = useState(false)
   const [restableciendo, setRestableciendo] = useState<UsuarioAdmin | null>(null)
@@ -78,8 +83,15 @@ export function UsuariosPage() {
   })
 
   const { data, isPending, error } = useQuery({
-    queryKey: ['admin', 'usuarios', convenioFiltro],
-    queryFn: () => adminUsuarios.listar({ convenioId: convenioFiltro || undefined }),
+    queryKey: ['admin', 'usuarios', convenioFiltro, pagina],
+    queryFn: () =>
+      adminUsuarios.listar({
+        convenioId: convenioFiltro || undefined,
+        pagina,
+        tamanoPagina: POR_PAGINA,
+      }),
+    // Conservar la página anterior evita que la tabla desaparezca al pasar de página.
+    placeholderData: keepPreviousData,
   })
 
   const estado = useMutation({
@@ -103,7 +115,12 @@ export function UsuariosPage() {
           <ComboBox
             id="filtro-conv-usuarios"
             valor={convenioFiltro}
-            onCambio={setConvenioFiltro}
+            // Al cambiar de convenio se vuelve al principio: la página 4 del filtro anterior
+            // no tiene por qué existir en el nuevo.
+            onCambio={(v) => {
+              setConvenioFiltro(v)
+              setPagina(1)
+            }}
             textoVacio="Todos los convenios"
             opciones={opcionesConvenio}
           />
@@ -129,7 +146,7 @@ export function UsuariosPage() {
         <div className="flex justify-center py-20 text-muted-foreground">
           <Loader2 className="size-6 animate-spin" aria-label="Cargando" />
         </div>
-      ) : data && data.length > 0 ? (
+      ) : data && data.items.length > 0 ? (
         <TablaAdmin>
           <EncabezadoTabla
             columnas={[
@@ -144,7 +161,7 @@ export function UsuariosPage() {
           />
 
           <tbody>
-            {data.map((u) => (
+            {data.items.map((u) => (
               <FilaTabla key={u.id} atenuada={!u.activo}>
                 <Celda>
                   <p className="font-medium text-foreground">
@@ -206,6 +223,16 @@ export function UsuariosPage() {
         </TablaAdmin>
       ) : (
         !error && <EstadoVacio mensaje="No hay usuarios para el filtro seleccionado." />
+      )}
+
+      {data && data.items.length > 0 && (
+        <Paginacion
+          pagina={data.pagina}
+          totalPaginas={data.totalPaginas}
+          totalRegistros={data.totalRegistros}
+          onCambiar={setPagina}
+          nombre="usuario"
+        />
       )}
 
       {(creando || editando) && (
