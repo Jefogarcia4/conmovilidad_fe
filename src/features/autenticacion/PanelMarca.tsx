@@ -35,23 +35,33 @@ function CapaMockup({ className, alt }: { className: string; alt: string }) {
  * mensajes incrustados en la propia imagen, así que aquí no se superpone nada: repetir el texto
  * en HTML lo mostraría dos veces.
  *
- * Y por eso mismo la imagen no puede recortarse. Cubrir el panel funciona mientras la ventana
- * mantenga una proporción parecida a la del mockup —en una pantalla 16:9 maximizada coinciden
- * casi exactamente—, pero basta con que el navegador quede bajo para que el recorte se lleve el
- * logo por arriba y la línea de la garantía por abajo. Se muestra entera y el hueco lo tapa la
- * misma imagen ampliada y desenfocada, en vez de una franja plana.
+ * La imagen es vertical (964×1080). Si el panel se quedara en media ventana fija, su proporción
+ * cambiaría con cada tamaño de navegador y siempre habría que sacrificar algo: recortando se
+ * perdía el logo o el subtítulo, y mostrándola entera aparecían bandas a los lados.
+ *
+ * Así que es el panel el que se adapta a la imagen: su ancho se deriva del alto disponible con la
+ * misma proporción del mockup, y entonces encaja exacto sin recortar ni dejar hueco. En una
+ * pantalla 16:9 maximizada da casi justo la mitad, que es la intención del diseño; en una ventana
+ * baja se estrecha y el formulario gana ese espacio.
+ *
+ * Los topes son para los extremos: sin ellos, una ventana muy alta lo convertiría en la pantalla
+ * entera y una muy baja lo dejaría en una tira. Solo en esos casos vuelve a recortar, y por eso
+ * se ancla arriba a la izquierda, donde están el logo y los textos.
  */
+const PROPORCION_MOCKUP = 964 / 1080
+
 export function PanelMarca() {
   return (
     // Oculto por debajo de `lg` para que en móvil el formulario ocupe toda la pantalla.
-    <section className="relative hidden overflow-hidden bg-primary lg:block">
-      <CapaMockup alt="" className="absolute inset-0 size-full scale-110 object-cover blur-2xl" />
-
+    <section
+      style={{ width: `clamp(30vw, calc(100dvh * ${PROPORCION_MOCKUP}), 52vw)` }}
+      className="relative hidden overflow-hidden bg-primary lg:block"
+    >
       <CapaMockup
         // El texto vive dentro de la imagen: sin esta descripción, quien use lector de pantalla
         // no recibiría nada de lo que dice el panel.
         alt="ConMovilidad. El marketplace donde tu próximo vehículo te espera. Descubre miles de autos, camionetas y motos verificadas. Compra y vende con total confianza. Vehículos con documentación al día."
-        className="absolute inset-0 size-full object-contain"
+        className="absolute inset-0 size-full object-cover object-left-top"
       />
     </section>
   )

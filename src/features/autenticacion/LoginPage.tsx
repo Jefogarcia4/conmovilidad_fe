@@ -57,7 +57,9 @@ export function LoginPage() {
   })
 
   return (
-    <main className="grid min-h-dvh lg:grid-cols-2">
+    // `auto` y no dos columnas iguales: el panel de marca fija su propio ancho a partir de la
+    // proporción de su imagen, y el formulario ocupa lo que quede.
+    <main className="grid min-h-dvh lg:grid-cols-[auto_1fr]">
       <PanelMarca />
 
       <section className="flex items-center justify-center px-6 py-12">
