@@ -12,6 +12,16 @@ import type {
   VehiculoLista,
 } from './types'
 
+export interface ActivarCuentaRequest {
+  passwordActual: string
+  passwordNuevo: string
+  emailRecuperacion: string
+  telefono: string
+  /** La API rechaza la activación si alguna de las dos llega en `false`. */
+  aceptaTerminos: boolean
+  aceptaHabeasData: boolean
+}
+
 export const autenticacion = {
   login: (numeroDocumento: string, password: string) =>
     api.post<AuthResponse>(
@@ -20,13 +30,11 @@ export const autenticacion = {
       { sinAutenticacion: true },
     ),
 
-  /** Primer ingreso: cambia la contraseña inicial y registra el correo de recuperación. */
-  activarCuenta: (passwordActual: string, passwordNuevo: string, emailRecuperacion: string) =>
-    api.post<void>('/auth/activar-cuenta', {
-      passwordActual,
-      passwordNuevo,
-      emailRecuperacion,
-    }),
+  /**
+   * Primer ingreso: cambia la contraseña inicial, registra los datos de contacto y deja
+   * constancia de las dos autorizaciones legales.
+   */
+  activarCuenta: (datos: ActivarCuentaRequest) => api.post<void>('/auth/activar-cuenta', datos),
 
   logout: (refreshToken: string) =>
     api.post<void>('/auth/logout', { refreshToken }, { sinAutenticacion: true }),
