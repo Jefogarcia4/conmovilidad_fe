@@ -30,8 +30,13 @@ import { ImportarUsuarios } from './ImportarUsuarios'
 /** Filas por página. Entran de sobra en una pantalla sin obligar a desplazarse. */
 const POR_PAGINA = 15
 
+/**
+ * `valor` es el nombre del rol en la API y no se toca; `etiqueta` es lo que lee el usuario. El rol
+ * base se llama `Asesor` internamente pero en pantalla es «Empleado», igual que en la plantilla
+ * de carga masiva.
+ */
 const ROLES: { valor: RolUsuario; etiqueta: string }[] = [
-  { valor: 'Asesor', etiqueta: 'Asesor' },
+  { valor: 'Asesor', etiqueta: 'Empleado' },
   { valor: 'AdministradorConvenio', etiqueta: 'Administrador de convenio' },
   { valor: 'SuperAdministrador', etiqueta: 'Superadministrador' },
 ]
