@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 /** Contenedor de tabla del portal: bordes, fondo y desplazamiento horizontal propio. */
@@ -12,28 +13,88 @@ export function TablaAdmin({ children }: { children: ReactNode }) {
   )
 }
 
-export function EncabezadoTabla({ columnas }: { columnas: (string | { texto: string; derecha: true })[] }) {
+export interface ColumnaTabla {
+  texto: string
+  derecha?: boolean
+  /** Sin clave, la columna no se puede ordenar: no todas tienen un criterio con sentido. */
+  clave?: string
+}
+
+export interface OrdenTabla {
+  clave: string
+  ascendente: boolean
+}
+
+export function EncabezadoTabla({
+  columnas,
+  orden,
+  onOrdenar,
+}: {
+  columnas: (string | ColumnaTabla)[]
+  orden?: OrdenTabla
+  onOrdenar?: (clave: string) => void
+}) {
   return (
     <thead>
       <tr className="border-b border-border bg-secondary/50">
         {columnas.map((c) => {
-          const texto = typeof c === 'string' ? c : c.texto
-          const derecha = typeof c !== 'string'
+          const columna: ColumnaTabla = typeof c === 'string' ? { texto: c } : c
+          const clave = columna.clave
+          const ordenar = clave && onOrdenar ? () => onOrdenar(clave) : null
+          const activa = Boolean(orden && clave && orden.clave === clave)
 
           return (
             <th
-              key={texto}
+              key={columna.texto}
+              // `aria-sort` es lo que anuncia el orden a un lector de pantalla; sin él, la flecha
+              // es información que solo existe para quien la ve.
+              aria-sort={
+                ordenar && activa && orden
+                  ? orden.ascendente
+                    ? 'ascending'
+                    : 'descending'
+                  : undefined
+              }
               className={cn(
                 'h-10 px-3 align-middle font-medium whitespace-nowrap text-foreground',
-                derecha ? 'text-right' : 'text-left',
+                columna.derecha ? 'text-right' : 'text-left',
               )}
             >
-              {texto}
+              {ordenar ? (
+                <button
+                  type="button"
+                  onClick={ordenar}
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded transition-colors hover:text-cta',
+                    'outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                    columna.derecha && 'flex-row-reverse',
+                    activa && 'text-cta',
+                  )}
+                >
+                  {columna.texto}
+                  <FlechaOrden activa={activa} ascendente={orden?.ascendente ?? true} />
+                </button>
+              ) : (
+                columna.texto
+              )}
             </th>
           )
         })}
       </tr>
     </thead>
+  )
+}
+
+/** La flecha de la columna inactiva se insinúa en gris: indica que se puede ordenar por ella. */
+function FlechaOrden({ activa, ascendente }: { activa: boolean; ascendente: boolean }) {
+  if (!activa) {
+    return <ChevronsUpDown className="size-3.5 text-muted-foreground/50" aria-hidden />
+  }
+
+  return ascendente ? (
+    <ChevronUp className="size-3.5" aria-hidden />
+  ) : (
+    <ChevronDown className="size-3.5" aria-hidden />
   )
 }
 

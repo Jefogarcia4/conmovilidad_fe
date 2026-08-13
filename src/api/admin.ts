@@ -127,9 +127,40 @@ export interface FiltroUsuarios {
   tamanoPagina?: number
 }
 
+/** Tope que impone la API por página; pedir más no trae más. */
+const MAXIMO_POR_PAGINA = 100
+
 export const adminUsuarios = {
   listar: (filtro: FiltroUsuarios = {}) =>
     api.get<ResultadoPaginado<UsuarioAdmin>>(`/admin/usuarios${queryString(filtro)}`),
+
+  /**
+   * Trae el listado completo encadenando páginas.
+   *
+   * El portal filtra y ordena en el navegador, así que necesita todos los usuarios y no solo los
+   * de una página: buscar sobre lo que hay a la vista devolvería resultados falsos. Con unos
+   * cientos de usuarios son dos o tres llamadas y el filtrado queda instantáneo; si la plataforma
+   * llegara a decenas de miles, esto debería pasar a filtrarse en el servidor.
+   */
+  listarTodos: async (filtro: Omit<FiltroUsuarios, 'pagina' | 'tamanoPagina'> = {}) => {
+    const todos: UsuarioAdmin[] = []
+
+    for (let pagina = 1; ; pagina++) {
+      const respuesta = await adminUsuarios.listar({
+        ...filtro,
+        pagina,
+        tamanoPagina: MAXIMO_POR_PAGINA,
+      })
+
+      todos.push(...respuesta.items)
+
+      // La segunda condición es la red de seguridad: si la API devolviera páginas vacías sin
+      // agotar el total, el bucle no debe quedarse girando.
+      if (pagina >= respuesta.totalPaginas || respuesta.items.length === 0) break
+    }
+
+    return todos
+  },
   crear: (datos: CrearUsuarioRequest) => api.post<UsuarioAdmin>('/admin/usuarios', datos),
   actualizar: (id: string, datos: ActualizarUsuarioRequest) =>
     api.put<UsuarioAdmin>(`/admin/usuarios/${id}`, datos),
