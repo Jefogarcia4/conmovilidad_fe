@@ -1,4 +1,4 @@
-import { Eye, ImageOff, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
+import { CreditCard, Eye, ImageOff, Loader2, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { VehiculoLista } from '@/api/types'
 import { formatearKilometraje, formatearPrecio } from '@/lib/formato'
@@ -10,9 +10,18 @@ interface Props {
   onEliminar: (vehiculo: VehiculoLista) => void
   /** Id del vehículo cuya eliminación está en curso, para bloquear su fila. */
   eliminandoId?: string
+  onPagar: (vehiculo: VehiculoLista) => void
+  /** Id del vehículo cuyo checkout se está abriendo. */
+  pagandoId?: string
 }
 
-export function TablaVehiculos({ vehiculos, onEliminar, eliminandoId }: Props) {
+export function TablaVehiculos({
+  vehiculos,
+  onEliminar,
+  eliminandoId,
+  onPagar,
+  pagandoId,
+}: Props) {
   const navegar = useNavigate()
 
   return (
@@ -104,6 +113,24 @@ export function TablaVehiculos({ vehiculos, onEliminar, eliminandoId }: Props) {
 
                 <td className="p-2 align-middle whitespace-nowrap">
                   <div className="flex items-center justify-end gap-1">
+                    {/* Solo cuando falta pagar: en el resto de estados no hay nada que cobrar y
+                        un botón permanente invitaría a pagar dos veces. */}
+                    {v.estado === 'PendientePago' && (
+                      <button
+                        type="button"
+                        onClick={() => onPagar(v)}
+                        disabled={pagandoId === v.id}
+                        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-cta px-2.5 text-sm font-medium text-cta-foreground transition-all outline-none hover:bg-cta-hover focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+                      >
+                        {pagandoId === v.id ? (
+                          <Loader2 className="size-4 animate-spin" aria-hidden />
+                        ) : (
+                          <CreditCard className="size-4" aria-hidden />
+                        )}
+                        Pagar
+                      </button>
+                    )}
+
                     <BotonAccion
                       etiqueta={`Ver ${v.marca} ${v.linea}`}
                       onClick={() => navegar(`/vehicle/${v.id}`)}

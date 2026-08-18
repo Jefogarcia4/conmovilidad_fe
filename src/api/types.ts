@@ -2,7 +2,14 @@
 
 export type RolUsuario = 'Asesor' | 'AdministradorConvenio' | 'SuperAdministrador'
 
-export type EstadoVehiculo = 'Borrador' | 'Disponible' | 'Reservado' | 'Vendido' | 'Inactivo'
+export type EstadoVehiculo =
+  | 'Borrador'
+  | 'Disponible'
+  | 'Reservado'
+  | 'Vendido'
+  | 'Inactivo'
+  /** Se pidió publicarlo pero el pago está pendiente: no aparece en el catálogo. */
+  | 'PendientePago'
 
 export type TipoVehiculo =
   | 'Automovil'
@@ -86,6 +93,8 @@ export interface VehiculoLista {
   ciudad?: string
   esBlindado: boolean
   estado: EstadoVehiculo
+  /** La publicación ya está pagada: no hay que volver a pasar por la pasarela. */
+  publicacionPagada: boolean
   /** Miniatura: el listado solo pinta tarjetas pequeñas. */
   imagenPrincipal?: string
   /** Galería completa y ordenada —también en miniatura—, para el carrusel de la tarjeta. */

@@ -4,9 +4,11 @@ import { ArrowLeft, Loader2 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '@/api/cliente'
 import { vehiculos } from '@/api/endpoints'
+import { pagos } from '@/api/pagos'
 import type { EstadoVehiculo, VehiculoDetalle } from '@/api/types'
 import { useAuth } from '@/auth/useAuth'
 import { Boton } from '@/components/ui/Boton'
+import { formatearPrecio } from '@/lib/formato'
 import { puedeGestionarVehiculo } from '@/features/vehiculos/permisos'
 import type { FormularioPublicacion } from './esquema'
 import { FormularioVehiculo } from './FormularioVehiculo'
@@ -57,6 +59,11 @@ function Editor({ vehiculo }: { vehiculo: VehiculoDetalle }) {
   const { usuario } = useAuth()
 
   const [estado, setEstado] = useState<EstadoVehiculo>(vehiculo.estado)
+
+  const { data: tarifa } = useQuery({
+    queryKey: ['pagos', 'tarifa'],
+    queryFn: pagos.tarifa,
+  })
 
   const puedeEditar = puedeGestionarVehiculo(usuario, vehiculo.publicadoPorUsuarioId)
 
@@ -130,7 +137,17 @@ function Editor({ vehiculo }: { vehiculo: VehiculoDetalle }) {
         onEnviar={(datos, imagenes) => guardar.mutate({ datos, imagenes })}
         onCancelar={() => navegar(`/vehicle/${vehiculo.id}`)}
       >
-        <SeccionEstado valor={estado} onCambio={setEstado} />
+        <SeccionEstado
+          valor={estado}
+          onCambio={setEstado}
+          avisoPago={
+            estado === 'Disponible' &&
+            !vehiculo.publicacionPagada &&
+            tarifa?.cobroActivo
+              ? `Cambiar a «Disponible» pedirá el pago de ${formatearPrecio(tarifa.precio)}.`
+              : undefined
+          }
+        />
       </FormularioVehiculo>
     </div>
   )

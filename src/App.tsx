@@ -11,6 +11,7 @@ import { ActivarCuentaPage } from './features/autenticacion/ActivarCuentaPage'
 import { LoginPage } from './features/autenticacion/LoginPage'
 import { DetalleVehiculoPage } from './features/detalle/DetalleVehiculoPage'
 import { HomePage } from './features/home/HomePage'
+import { PagoResultadoPage } from './features/pagos/PagoResultadoPage'
 import { MisVehiculosPage } from './features/vehiculos/MisVehiculosPage'
 import { PendientePage } from './features/vehiculos/PendientePage'
 
@@ -28,6 +29,9 @@ const EmpresasPage = lazy(() =>
 )
 const UsuariosPage = lazy(() =>
   import('./features/admin/UsuariosPage').then((m) => ({ default: m.UsuariosPage })),
+)
+const TarifasPage = lazy(() =>
+  import('./features/admin/TarifasPage').then((m) => ({ default: m.TarifasPage })),
 )
 const PublicarPage = lazy(() =>
   import('./features/publicar/PublicarPage').then((m) => ({ default: m.PublicarPage })),
@@ -71,12 +75,17 @@ export default function App() {
                 <Route path="/vehicle/:id" element={<DetalleVehiculoPage />} />
                 <Route path="/vehicle/:id/editar" element={<EditarVehiculoPage />} />
 
+                {/* Destino del redirect de Wompi. La ruta debe coincidir con `Wompi:UrlRedireccion`
+                    de la API, que es la que se le manda a la pasarela. */}
+                <Route path="/pago" element={<PagoResultadoPage />} />
+
                 <Route element={<RutaAdmin />}>
                   <Route path="/admin" element={<LayoutAdmin />}>
                     <Route index element={<Navigate to="/admin/convenios" replace />} />
                     <Route path="convenios" element={<ConveniosPage />} />
                     <Route path="empresas" element={<EmpresasPage />} />
                     <Route path="usuarios" element={<UsuariosPage />} />
+                    <Route path="tarifas" element={<TarifasPage />} />
                   </Route>
                 </Route>
 

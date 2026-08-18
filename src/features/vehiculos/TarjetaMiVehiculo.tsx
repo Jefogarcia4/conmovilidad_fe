@@ -1,4 +1,4 @@
-import { Eye, ImageOff, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
+import { CreditCard, Eye, ImageOff, Loader2, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { VehiculoLista } from '@/api/types'
 import { ImagenCompleta } from '@/components/ui/ImagenCompleta'
@@ -10,15 +10,24 @@ interface Props {
   vehiculo: VehiculoLista
   onEliminar: (vehiculo: VehiculoLista) => void
   eliminando?: boolean
+  onPagar: () => void
+  pagando?: boolean
 }
 
 /**
  * Tarjeta de gestión: la del catálogo vende el vehículo, esta lo administra. Por eso muestra el
  * estado de la publicación en vez del año y remata con acciones en lugar de «Ver Vehículo».
  */
-export function TarjetaMiVehiculo({ vehiculo, onEliminar, eliminando = false }: Props) {
+export function TarjetaMiVehiculo({
+  vehiculo,
+  onEliminar,
+  eliminando = false,
+  onPagar,
+  pagando = false,
+}: Props) {
   const navegar = useNavigate()
   const estado = presentarEstado(vehiculo.estado)
+  const pendienteDePago = vehiculo.estado === 'PendientePago'
 
   const meta = [
     String(vehiculo.modelo),
@@ -69,6 +78,30 @@ export function TarjetaMiVehiculo({ vehiculo, onEliminar, eliminando = false }: 
         <p className="font-display text-xl font-bold text-foreground">
           {formatearPrecio(vehiculo.precio)}
         </p>
+
+        {/* El pago pendiente es lo único que separa al vehículo del catálogo, así que va como
+            acción principal a ancho completo y no escondido entre los iconos de gestión. */}
+        {pendienteDePago && (
+          <button
+            type="button"
+            onClick={onPagar}
+            disabled={pagando}
+            className={cn(
+              'inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg',
+              'bg-cta px-3 text-sm font-medium text-cta-foreground',
+              'transition-all outline-none hover:bg-cta-hover',
+              'focus-visible:ring-3 focus-visible:ring-ring/50',
+              'disabled:pointer-events-none disabled:opacity-50',
+            )}
+          >
+            {pagando ? (
+              <Loader2 className="size-3.5 animate-spin" aria-hidden />
+            ) : (
+              <CreditCard className="size-3.5" aria-hidden />
+            )}
+            Pagar publicación
+          </button>
+        )}
 
         <div className="flex items-center gap-2 pt-1">
           <BotonAccion

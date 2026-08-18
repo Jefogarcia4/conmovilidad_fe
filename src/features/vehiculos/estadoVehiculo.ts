@@ -25,6 +25,13 @@ const PRESENTACION: Record<EstadoVehiculo, Presentacion> = {
   },
   Borrador: { etiqueta: 'Borrador', badge: 'bg-muted text-muted-foreground', punto: 'bg-muted-foreground' },
   Inactivo: { etiqueta: 'Inactivo', badge: 'bg-muted text-muted-foreground', punto: 'bg-muted-foreground' },
+  // En naranja y no en gris: no es un estado en reposo como el borrador, es algo que le falta al
+  // vendedor por hacer para que su vehículo salga al catálogo.
+  PendientePago: {
+    etiqueta: 'Pendiente de pago',
+    badge: 'bg-orange-500/10 text-orange-700',
+    punto: 'bg-orange-500',
+  },
 }
 
 export function presentarEstado(estado: EstadoVehiculo): Presentacion {

@@ -1,4 +1,5 @@
 import { api, queryString } from './cliente'
+import type { EstadoPago } from './pagos'
 import type { ResultadoPaginado, RolUsuario, TipoDocumento } from './types'
 
 export interface ConvenioAdmin {
@@ -102,6 +103,68 @@ export const adminEmpresas = {
     api.put<EmpresaAdmin>(`/admin/empresas/${id}`, datos),
   cambiarEstado: (id: string, activo: boolean) =>
     api.patch<void>(`/admin/empresas/${id}/estado`, { activo }),
+}
+
+export interface TarifaAdmin {
+  id: string
+  /** Nulo en la tarifa global de la plataforma. */
+  convenioId?: string
+  convenioNombre?: string
+  precio: number
+  moneda: string
+  /** Con el cobro desactivado se publica sin pasar por la pasarela. */
+  cobroActivo: boolean
+  fechaActualizacion?: string
+}
+
+export interface GuardarTarifaRequest {
+  precio: number
+  cobroActivo: boolean
+}
+
+export interface PagoAdmin {
+  id: string
+  vehiculoId: string
+  placa: string
+  vehiculoDescripcion: string
+  convenioId: string
+  convenioNombre: string
+  empresaNombre: string
+  usuarioNombre: string
+  referencia: string
+  monto: number
+  moneda: string
+  estado: EstadoPago
+  estadoProveedor?: string
+  metodoPago?: string
+  fechaCreacion: string
+  fechaAprobacion?: string
+}
+
+export interface FiltroPagosAdmin {
+  convenioId?: string
+  estado?: EstadoPago
+  pagina?: number
+  tamanoPagina?: number
+}
+
+export const adminTarifas = {
+  listar: () => api.get<TarifaAdmin[]>('/admin/tarifas'),
+
+  guardarGlobal: (datos: GuardarTarifaRequest) =>
+    api.put<TarifaAdmin>('/admin/tarifas/global', datos),
+
+  guardarConvenio: (convenioId: string, datos: GuardarTarifaRequest) =>
+    api.put<TarifaAdmin>(`/admin/tarifas/convenios/${convenioId}`, datos),
+
+  /** Retira la tarifa propia del convenio: vuelve a regirse por la global. */
+  eliminarConvenio: (convenioId: string) =>
+    api.delete<void>(`/admin/tarifas/convenios/${convenioId}`),
+}
+
+export const adminPagos = {
+  listar: (filtro: FiltroPagosAdmin = {}) =>
+    api.get<ResultadoPaginado<PagoAdmin>>(`/admin/pagos${queryString(filtro)}`),
 }
 
 export interface ErrorImportacion {

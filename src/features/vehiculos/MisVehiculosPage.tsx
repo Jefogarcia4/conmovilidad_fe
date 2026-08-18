@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { vehiculos } from '@/api/endpoints'
+import { irAlCheckout, pagos } from '@/api/pagos'
 import type { VehiculoLista } from '@/api/types'
 import { Alerta } from '@/components/ui/Alerta'
 import { AlternadorVista, type ModoVista } from '@/components/ui/AlternadorVista'
@@ -15,8 +16,12 @@ const MODOS = ['tabla', 'tarjetas'] as const
 
 export function MisVehiculosPage() {
   const clienteConsultas = useQueryClient()
+  const ubicacion = useLocation()
   const [modo, setModo] = usePreferencia<ModoVista>('conmovilidad.vistaMisVehiculos', 'tabla', MODOS)
   const [porEliminar, setPorEliminar] = useState<VehiculoLista | null>(null)
+
+  // La publicación puede acabar aquí cuando el vehículo se guardó pero no se pudo abrir el cobro.
+  const avisoPago = (ubicacion.state as { avisoPago?: string } | null)?.avisoPago
 
   const { data, isPending, error } = useQuery({
     queryKey: ['vehiculos', 'mios'],
@@ -28,6 +33,19 @@ export function MisVehiculosPage() {
     onSuccess: async () => {
       setPorEliminar(null)
       // El vehículo desaparece del catálogo del convenio además de esta lista.
+      await clienteConsultas.invalidateQueries({ queryKey: ['vehiculos'] })
+    },
+  })
+
+  const pagar = useMutation({
+    mutationFn: (id: string) => pagos.checkout(id),
+    onSuccess: async (checkout) => {
+      if (checkout.requierePago && checkout.urlCheckout) {
+        irAlCheckout(checkout.urlCheckout)
+        return
+      }
+
+      // No hubo nada que cobrar: el vehículo ya quedó publicado del lado de la API.
       await clienteConsultas.invalidateQueries({ queryKey: ['vehiculos'] })
     },
   })
@@ -62,9 +80,13 @@ export function MisVehiculosPage() {
           <AlternadorVista valor={modo} onCambio={setModo} />
         </div>
 
+        {avisoPago && <Alerta>{avisoPago}</Alerta>}
+
         {error && <Alerta>{(error as Error).message}</Alerta>}
 
         {eliminar.error && <Alerta>{(eliminar.error as Error).message}</Alerta>}
+
+        {pagar.error && <Alerta>{(pagar.error as Error).message}</Alerta>}
 
         {isPending ? (
           <Cargando modo={modo} />
@@ -74,6 +96,8 @@ export function MisVehiculosPage() {
               vehiculos={data.items}
               onEliminar={setPorEliminar}
               eliminandoId={eliminar.isPending ? (porEliminar?.id ?? undefined) : undefined}
+              onPagar={(v) => pagar.mutate(v.id)}
+              pagandoId={pagar.isPending ? pagar.variables : undefined}
             />
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -83,6 +107,8 @@ export function MisVehiculosPage() {
                   vehiculo={v}
                   onEliminar={setPorEliminar}
                   eliminando={eliminar.isPending && porEliminar?.id === v.id}
+                  onPagar={() => pagar.mutate(v.id)}
+                  pagando={pagar.isPending && pagar.variables === v.id}
                 />
               ))}
             </div>

@@ -6,6 +6,7 @@ import { vehiculos } from '@/api/endpoints'
 import { useAuth } from '@/auth/useAuth'
 import { Alerta } from '@/components/ui/Alerta'
 import { Boton } from '@/components/ui/Boton'
+import { AvisoPagoPendiente } from '@/features/pagos/AvisoPagoPendiente'
 import { EstadoBadge } from '@/features/vehiculos/EstadoBadge'
 import { puedeGestionarVehiculo } from '@/features/vehiculos/permisos'
 import { useEtiquetasVehiculo } from '@/features/vehiculos/useEtiquetasVehiculo'
@@ -54,6 +55,7 @@ export function DetalleVehiculoPage() {
   }
 
   const titulo = `${data.marca} ${data.linea}`
+  const puedeGestionar = puedeGestionarVehiculo(usuario, data.publicadoPorUsuarioId)
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -81,7 +83,7 @@ export function DetalleVehiculoPage() {
         {/* Un vehículo reservado o vendido sigue siendo visible: hay que decirlo aquí. */}
         {data.estado !== 'Disponible' && <EstadoBadge estado={data.estado} />}
 
-        {puedeGestionarVehiculo(usuario, data.publicadoPorUsuarioId) && (
+        {puedeGestionar && (
           <Link to={`/vehicle/${data.id}/editar`} className="ml-auto">
             <Boton variante="secundario" tamano="sm">
               <Pencil className="size-4" aria-hidden />
@@ -90,6 +92,12 @@ export function DetalleVehiculoPage() {
           </Link>
         )}
       </div>
+
+      {/* Solo para quien lo gestiona: para el resto del convenio este vehículo no está en el
+          catálogo, así que no hay nada que explicarles ni que pagar. */}
+      {data.estado === 'PendientePago' && puedeGestionar && (
+        <AvisoPagoPendiente vehiculoId={data.id} />
+      )}
 
       {/* `items-start` es lo que hace funcionar el `sticky` del panel: sin él, el grid estira
           la columna a toda la altura de la fila y el elemento nunca tiene margen para pegarse. */}
