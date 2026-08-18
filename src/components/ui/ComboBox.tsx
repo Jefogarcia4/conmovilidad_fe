@@ -14,6 +14,13 @@ export interface OpcionCombo {
  */
 const MAXIMO_VISIBLES = 100
 
+/**
+ * Compara sin acentos ni mayúsculas: en «Armenia, Quindío» se busca tecleando «quindio», y
+ * nadie escribe las tildes al filtrar.
+ */
+const comparable = (texto: string) =>
+  texto.normalize('NFD').replace(/\p{Mn}/gu, '').toLowerCase()
+
 interface Props {
   opciones: OpcionCombo[]
   valor: string
@@ -70,10 +77,10 @@ export function ComboBox({
   const textoVisible = abierto ? busqueda : (seleccionada?.etiqueta ?? (permitirCrear ? valor : ''))
 
   const { filtradas, hayMas } = useMemo(() => {
-    const termino = busqueda.trim().toLowerCase()
+    const termino = comparable(busqueda.trim())
 
     const coincidencias = termino
-      ? opciones.filter((o) => o.etiqueta.toLowerCase().includes(termino))
+      ? opciones.filter((o) => comparable(o.etiqueta).includes(termino))
       : opciones
 
     return {
@@ -85,7 +92,7 @@ export function ComboBox({
   const puedeCrear =
     permitirCrear &&
     busqueda.trim().length > 0 &&
-    !opciones.some((o) => o.etiqueta.toLowerCase() === busqueda.trim().toLowerCase())
+    !opciones.some((o) => comparable(o.etiqueta) === comparable(busqueda.trim()))
 
   useEffect(() => {
     if (!abierto) return
