@@ -8,6 +8,12 @@ export interface OpcionCombo {
   etiqueta: string
 }
 
+/**
+ * Cuántas opciones se pintan a la vez. Las ciudades del país pasan de mil y montar esa lista
+ * entera al abrir el desplegable se nota; teclear dos letras la deja en un puñado.
+ */
+const MAXIMO_VISIBLES = 100
+
 interface Props {
   opciones: OpcionCombo[]
   valor: string
@@ -63,11 +69,17 @@ export function ComboBox({
   // Cerrado muestra la etiqueta elegida; abierto, lo que se está escribiendo.
   const textoVisible = abierto ? busqueda : (seleccionada?.etiqueta ?? (permitirCrear ? valor : ''))
 
-  const filtradas = useMemo(() => {
+  const { filtradas, hayMas } = useMemo(() => {
     const termino = busqueda.trim().toLowerCase()
-    if (!termino) return opciones
 
-    return opciones.filter((o) => o.etiqueta.toLowerCase().includes(termino))
+    const coincidencias = termino
+      ? opciones.filter((o) => o.etiqueta.toLowerCase().includes(termino))
+      : opciones
+
+    return {
+      filtradas: coincidencias.slice(0, MAXIMO_VISIBLES),
+      hayMas: coincidencias.length > MAXIMO_VISIBLES,
+    }
   }, [opciones, busqueda])
 
   const puedeCrear =
@@ -237,6 +249,12 @@ export function ComboBox({
 
           {filtradas.length === 0 && !puedeCrear && (
             <li className="px-2.5 py-2 text-sm text-muted-foreground">Sin coincidencias</li>
+          )}
+
+          {hayMas && (
+            <li className="px-2.5 py-2 text-xs text-muted-foreground">
+              Hay más opciones: escribe para acotar la búsqueda.
+            </li>
           )}
 
           {puedeCrear && (

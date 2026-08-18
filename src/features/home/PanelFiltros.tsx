@@ -43,9 +43,9 @@ function CampoFiltro({
 
 export function PanelFiltros({ valores, onCambio, totalResultados }: Props) {
   /*
-   * Las tres listas salen del propio catálogo, no de los datos maestros. Alimentar la ciudad
-   * con las empresas del convenio dejaba fuera del filtro cualquier vehículo publicado en otra
-   * ciudad —el formulario ofrece diez— y sobraban marcas sin un solo vehículo.
+   * Las tres listas salen del propio catálogo, no de los datos maestros: el formulario de alta
+   * ofrece los más de mil municipios del país, y traerlos todos al filtro llenaría el
+   * desplegable de ciudades sin un solo vehículo. Aquí solo aparece lo que hay publicado.
    */
   const { data: opciones } = useQuery({
     queryKey: ['vehiculos', 'catalogo', 'filtros'],
