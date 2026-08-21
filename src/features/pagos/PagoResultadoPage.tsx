@@ -2,7 +2,9 @@ import { useEffect, type ReactNode } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertCircle, ArrowRight, CheckCircle2, Clock, Loader2, RefreshCw } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { irAlCheckout, pagos } from '@/api/pagos'
+import { ApiError } from '@/api/cliente'
+import { irAlCheckout, pagos, type PagoPublicacion } from '@/api/pagos'
+import { adminSuscripciones, type PagoSuscripcion } from '@/api/suscripciones'
 import { Alerta } from '@/components/ui/Alerta'
 import { Boton } from '@/components/ui/Boton'
 import { formatearPrecio } from '@/lib/formato'
@@ -10,6 +12,31 @@ import { cn } from '@/lib/utils'
 
 /** Cada cuánto se vuelve a preguntar mientras el pago sigue sin resolverse. */
 const INTERVALO_SONDEO_MS = 5_000
+
+/**
+ * Por esta pantalla vuelven los dos cobros de la plataforma: la publicación de un vehículo y la
+ * suscripción de una empresa. La pasarela usa una única URL de retorno y el identificador de la
+ * transacción no dice cuál de los dos es, así que se prueba primero el que hace todo el mundo.
+ */
+type ResultadoPago =
+  | { tipo: 'vehiculo'; pago: PagoPublicacion }
+  | { tipo: 'suscripcion'; pago: PagoSuscripcion }
+
+async function verificar(transaccionId: string): Promise<ResultadoPago> {
+  try {
+    return { tipo: 'vehiculo', pago: await pagos.verificar(transaccionId) }
+  } catch (e) {
+    if (!(e instanceof ApiError) || e.status !== 404) throw e
+
+    try {
+      return { tipo: 'suscripcion', pago: await adminSuscripciones.verificar(transaccionId) }
+    } catch {
+      // Tampoco es de una suscripción, o quien mira no es administrador. Vale más el error
+      // original: habla del pago que esta persona estaba esperando.
+      throw e
+    }
+  }
+}
 
 /**
  * Pantalla a la que Wompi devuelve al usuario tras el checkout. Verifica la transacción contra la
@@ -29,17 +56,25 @@ export function PagoResultadoPage() {
 
   const { data, isPending, error, refetch, isFetching } = useQuery({
     queryKey: ['pagos', 'verificar', transaccionId],
-    queryFn: () => pagos.verificar(transaccionId!),
+    queryFn: () => verificar(transaccionId!),
     enabled: Boolean(transaccionId),
 
     // Con PSE o Nequi la aprobación tarda: mientras el pago siga en curso se vuelve a preguntar
     // solo, para que el usuario no tenga que refrescar a mano.
     refetchInterval: (consulta) =>
-      consulta.state.data?.estado === 'Pendiente' ? INTERVALO_SONDEO_MS : false,
+      consulta.state.data?.pago.estado === 'Pendiente' ? INTERVALO_SONDEO_MS : false,
   })
 
-  const reintentar = useMutation({
-    mutationFn: (vehiculoId: string) => pagos.checkout(vehiculoId),
+  // Los dos checkout devuelven cosas distintas, pero de aquí solo se usa a dónde hay que ir.
+  const reintentar = useMutation<
+    { requierePago: boolean; urlCheckout?: string },
+    Error,
+    ResultadoPago
+  >({
+    mutationFn: (resultado) =>
+      resultado.tipo === 'vehiculo'
+        ? pagos.checkout(resultado.pago.vehiculoId)
+        : adminSuscripciones.checkout(resultado.pago.suscripcionEmpresaId),
     onSuccess: (checkout) => {
       if (checkout.requierePago && checkout.urlCheckout) {
         irAlCheckout(checkout.urlCheckout)
@@ -50,14 +85,16 @@ export function PagoResultadoPage() {
     },
   })
 
-  const aprobado = data?.estado === 'Aprobado'
+  const aprobado = data?.pago.estado === 'Aprobado'
 
-  // Un pago aprobado cambia el estado del vehículo, así que el catálogo y «mis vehículos» dejan
-  // de ser válidos. Va en un efecto porque invalidar es una escritura y no puede ocurrir durante
-  // el render.
+  // Un pago aprobado cambia el estado del vehículo o abre el cupo de la empresa, así que el
+  // catálogo, «mis vehículos» y el cupo dejan de ser válidos. Va en un efecto porque invalidar es
+  // una escritura y no puede ocurrir durante el render.
   useEffect(() => {
     if (aprobado) {
       clienteConsultas.invalidateQueries({ queryKey: ['vehiculos'] })
+      clienteConsultas.invalidateQueries({ queryKey: ['suscripciones', 'mi-cupo'] })
+      clienteConsultas.invalidateQueries({ queryKey: ['admin', 'suscripciones'] })
     }
   }, [aprobado, clienteConsultas])
 
@@ -93,38 +130,50 @@ export function PagoResultadoPage() {
               </>
             }
           />
-        ) : data.estado === 'Aprobado' ? (
+        ) : data.pago.estado === 'Aprobado' ? (
           <Resultado
             icono={<CheckCircle2 className="size-7" aria-hidden />}
             tono="exito"
             titulo="¡Pago confirmado!"
-            texto={`Pagaste ${formatearPrecio(data.monto)} por la publicación de ${data.vehiculoDescripcion} (${data.placa}). Ya está visible en el catálogo de tu convenio.`}
+            texto={
+              data.tipo === 'suscripcion'
+                ? `Pagaste ${formatearPrecio(data.pago.monto)} por el ${data.pago.planNombre} de ${data.pago.empresaNombre}. Su cupo de publicaciones ya está activo.`
+                : `Pagaste ${formatearPrecio(data.pago.monto)} por la publicación de ${data.pago.vehiculoDescripcion} (${data.pago.placa}). Ya está visible en el catálogo de tu convenio.`
+            }
             acciones={
-              <>
-                <Link
-                  to={`/vehicle/${data.vehiculoId}`}
-                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-cta px-3 text-sm font-medium text-cta-foreground transition-all hover:bg-cta-hover"
-                >
-                  Ver mi vehículo
-                  <ArrowRight className="size-4" aria-hidden />
-                </Link>
-                <EnlaceMisVehiculos />
-              </>
+              data.tipo === 'suscripcion' ? (
+                <EnlaceSuscripciones />
+              ) : (
+                <>
+                  <Link
+                    to={`/vehicle/${data.pago.vehiculoId}`}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-cta px-3 text-sm font-medium text-cta-foreground transition-all hover:bg-cta-hover"
+                  >
+                    Ver mi vehículo
+                    <ArrowRight className="size-4" aria-hidden />
+                  </Link>
+                  <EnlaceMisVehiculos />
+                </>
+              )
             }
           />
-        ) : data.estado === 'Pendiente' ? (
+        ) : data.pago.estado === 'Pendiente' ? (
           <Resultado
             icono={<Clock className="size-7" aria-hidden />}
             tono="espera"
             titulo="Estamos confirmando tu pago"
-            texto="Si pagaste con PSE o Nequi puede tardar unos minutos. Publicaremos tu vehículo apenas se apruebe, aunque cierres esta página."
+            texto={
+              data.tipo === 'suscripcion'
+                ? 'Si pagaste con PSE o Nequi puede tardar unos minutos. Activaremos la suscripción apenas se apruebe, aunque cierres esta página.'
+                : 'Si pagaste con PSE o Nequi puede tardar unos minutos. Publicaremos tu vehículo apenas se apruebe, aunque cierres esta página.'
+            }
             acciones={
               <>
                 <Boton onClick={() => refetch()} cargando={isFetching}>
                   <RefreshCw className="size-4" aria-hidden />
                   Verificar de nuevo
                 </Boton>
-                <EnlaceMisVehiculos />
+                {data.tipo === 'suscripcion' ? <EnlaceSuscripciones /> : <EnlaceMisVehiculos />}
               </>
             }
           />
@@ -133,17 +182,18 @@ export function PagoResultadoPage() {
             icono={<AlertCircle className="size-7" aria-hidden />}
             tono="error"
             titulo="El pago no se completó"
-            texto={`${textoDeFallo(data.estado)} Tu vehículo quedó guardado y pendiente de pago: puedes intentarlo de nuevo cuando quieras.`}
+            texto={`${textoDeFallo(data.pago.estado)} ${
+              data.tipo === 'suscripcion'
+                ? 'La suscripción quedó registrada y sin activar: puedes intentarlo de nuevo cuando quieras.'
+                : 'Tu vehículo quedó guardado y pendiente de pago: puedes intentarlo de nuevo cuando quieras.'
+            }`}
             acciones={
               <>
-                <Boton
-                  onClick={() => reintentar.mutate(data.vehiculoId)}
-                  cargando={reintentar.isPending}
-                >
+                <Boton onClick={() => reintentar.mutate(data)} cargando={reintentar.isPending}>
                   <RefreshCw className="size-4" aria-hidden />
                   Reintentar el pago
                 </Boton>
-                <EnlaceMisVehiculos />
+                {data.tipo === 'suscripcion' ? <EnlaceSuscripciones /> : <EnlaceMisVehiculos />}
               </>
             }
           />
@@ -168,6 +218,17 @@ function textoDeFallo(estado: string): string {
     default:
       return 'La pasarela reportó un error al procesarla.'
   }
+}
+
+function EnlaceSuscripciones() {
+  return (
+    <Link
+      to="/admin/suscripciones"
+      className="inline-flex h-8 items-center rounded-lg border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+    >
+      Ver suscripciones
+    </Link>
+  )
 }
 
 function EnlaceMisVehiculos() {

@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '@/api/cliente'
 import { vehiculos } from '@/api/endpoints'
 import { pagos } from '@/api/pagos'
+import { suscripciones } from '@/api/suscripciones'
 import type { EstadoVehiculo, VehiculoDetalle } from '@/api/types'
 import { useAuth } from '@/auth/useAuth'
 import { Boton } from '@/components/ui/Boton'
@@ -65,6 +66,11 @@ function Editor({ vehiculo }: { vehiculo: VehiculoDetalle }) {
     queryFn: pagos.tarifa,
   })
 
+  const { data: cupo } = useQuery({
+    queryKey: ['suscripciones', 'mi-cupo'],
+    queryFn: suscripciones.miCupo,
+  })
+
   const puedeEditar = puedeGestionarVehiculo(usuario, vehiculo.publicadoPorUsuarioId)
 
   // Con la publicación pagada, los datos principales quedan fijos. La excepción es un vehículo
@@ -100,6 +106,7 @@ function Editor({ vehiculo }: { vehiculo: VehiculoDetalle }) {
     },
     onSuccess: async () => {
       await clienteConsultas.invalidateQueries({ queryKey: ['vehiculos'] })
+      await clienteConsultas.invalidateQueries({ queryKey: ['suscripciones', 'mi-cupo'] })
       navegar(`/vehicle/${vehiculo.id}`, { replace: true })
     },
   })
@@ -113,6 +120,24 @@ function Editor({ vehiculo }: { vehiculo: VehiculoDetalle }) {
         textoVolver="Ver el vehículo"
       />
     )
+  }
+
+  /**
+   * Qué implica dejar el vehículo en «Disponible». Uno ya cubierto no dice nada: ni cuesta ni
+   * consume cupo, porque tanto el cobro como el cupo se gastan una sola vez por vehículo.
+   */
+  function avisoDelEstado(): string | undefined {
+    if (estado !== 'Disponible' || vehiculo.publicacionPagada) return undefined
+
+    if (cupo?.tieneSuscripcion) {
+      return cupo.disponibles > 0
+        ? `Publicarlo descontará 1 de las ${cupo.maximo} publicaciones que incluye la suscripción de tu empresa este mes; te quedan ${cupo.disponibles}.`
+        : `Tu empresa agotó las ${cupo.maximo} publicaciones de este mes, así que no podrás publicarlo hasta que el cupo se renueve el día primero.`
+    }
+
+    return tarifa?.cobroActivo
+      ? `Cambiar a «Disponible» pedirá el pago de ${formatearPrecio(tarifa.precio)}.`
+      : undefined
   }
 
   return (
@@ -143,17 +168,7 @@ function Editor({ vehiculo }: { vehiculo: VehiculoDetalle }) {
         onEnviar={(datos, imagenes) => guardar.mutate({ datos, imagenes })}
         onCancelar={() => navegar(`/vehicle/${vehiculo.id}`)}
       >
-        <SeccionEstado
-          valor={estado}
-          onCambio={setEstado}
-          avisoPago={
-            estado === 'Disponible' &&
-            !vehiculo.publicacionPagada &&
-            tarifa?.cobroActivo
-              ? `Cambiar a «Disponible» pedirá el pago de ${formatearPrecio(tarifa.precio)}.`
-              : undefined
-          }
-        />
+        <SeccionEstado valor={estado} onCambio={setEstado} avisoPago={avisoDelEstado()} />
       </FormularioVehiculo>
     </div>
   )

@@ -1,4 +1,4 @@
-import { Building2, Handshake, Tag, Users } from 'lucide-react'
+import { Building2, CalendarClock, Handshake, Tag, Users } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
@@ -7,6 +7,7 @@ const secciones = [
   { a: '/admin/empresas', texto: 'Empresas', Icono: Building2 },
   { a: '/admin/usuarios', texto: 'Usuarios', Icono: Users },
   { a: '/admin/tarifas', texto: 'Tarifas', Icono: Tag },
+  { a: '/admin/suscripciones', texto: 'Suscripciones', Icono: CalendarClock },
 ]
 
 export function LayoutAdmin() {
@@ -15,7 +16,8 @@ export function LayoutAdmin() {
       <header className="mb-6">
         <h1 className="font-display text-3xl font-bold text-foreground">Administración</h1>
         <p className="text-muted-foreground">
-          Gestiona los convenios, las empresas afiliadas, los usuarios y el costo de publicación.
+          Gestiona los convenios, las empresas afiliadas, los usuarios y lo que cuesta publicar,
+          por vehículo o por suscripción.
         </p>
       </header>
 

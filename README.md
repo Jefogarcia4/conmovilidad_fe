@@ -211,6 +211,23 @@ el comportamiento es idéntico en todas las plataformas y las listas largas se v
   fallaba la decimoctava se perdían las diecisiete anteriores. Ahora las que entran se conservan y
   el aviso dice cuáles repetir.
 
+## Suscripciones y cupo de publicación
+
+- **El aviso del formulario cambia según cómo se vaya a pagar.** Sin suscripción anuncia el precio
+  por vehículo, como antes; con suscripción anuncia cuántas publicaciones quedan del mes, y con el
+  cupo agotado avisa de que el vehículo se guardará como borrador. Va arriba del formulario a
+  propósito: enterarse después de veinte campos y diez fotos es la peor forma de descubrirlo.
+- **El botón de envío dice lo que va a pasar**: «Continuar al pago», «Publicar Vehículo» o
+  «Guardar como borrador».
+- **Con el cupo agotado no se pide el checkout.** La decisión se toma con el estado que devolvió la
+  API —si guardó el vehículo como borrador, no hay nada que cobrar—, no con el cupo consultado al
+  entrar, que para entonces puede haberse quedado viejo.
+- **`/pago` atiende los dos cobros.** Wompi tiene una única URL de retorno y el identificador de la
+  transacción no dice si era una publicación o una suscripción: la pantalla prueba primero la
+  verificación de vehículo, que es la que hace todo el mundo, y solo si la API responde 404 busca
+  entre las suscripciones. Si esa segunda consulta también falla se muestra el error original, que
+  es el que habla del pago que la persona estaba esperando.
+
 ## Portal de administración
 
 Reservado al rol `SuperAdministrador`, con tres pestañas: convenios, empresas y usuarios.
