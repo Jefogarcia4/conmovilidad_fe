@@ -5,11 +5,13 @@ interface Props {
   titulo: string
   descripcion: string
   Icono: LucideIcon
+  /** Nota que se antepone a los campos, para explicar por qué la sección se comporta distinto. */
+  aviso?: ReactNode
   children: ReactNode
 }
 
 /** Bloque del formulario de publicación: encabezado con icono y una rejilla de tres columnas. */
-export function SeccionFormulario({ titulo, descripcion, Icono, children }: Props) {
+export function SeccionFormulario({ titulo, descripcion, Icono, aviso, children }: Props) {
   return (
     <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
       <header className="mb-5 flex items-start gap-3">
@@ -22,6 +24,8 @@ export function SeccionFormulario({ titulo, descripcion, Icono, children }: Prop
           <p className="text-xs text-muted-foreground">{descripcion}</p>
         </div>
       </header>
+
+      {aviso && <div className="mb-4">{aviso}</div>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
     </section>

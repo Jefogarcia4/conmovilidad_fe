@@ -22,6 +22,11 @@ interface Props {
    * del almacén hasta que el usuario confirme, para que cancelar no rompa la publicación viva.
    */
   urlsPersistidas?: string[]
+  /**
+   * Deja «Datos principales» en solo lectura. Se activa al editar un vehículo cuya publicación
+   * ya está pagada: el cobro es por *ese* vehículo, así que su identidad no puede cambiar.
+   */
+  datosPrincipalesBloqueados?: boolean
   textoEnviar: string
   enviando: boolean
   error: unknown
@@ -35,6 +40,7 @@ export function FormularioVehiculo({
   valoresIniciales,
   imagenesIniciales = [],
   urlsPersistidas,
+  datosPrincipalesBloqueados,
   textoEnviar,
   enviando,
   error,
@@ -73,7 +79,13 @@ export function FormularioVehiculo({
 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-5">
-      <SeccionDatosPrincipales control={control} errors={errors} watch={watch} setValue={setValue} />
+      <SeccionDatosPrincipales
+        control={control}
+        errors={errors}
+        watch={watch}
+        setValue={setValue}
+        bloqueada={datosPrincipalesBloqueados}
+      />
 
       <SeccionEspecificaciones control={control} errors={errors} />
 

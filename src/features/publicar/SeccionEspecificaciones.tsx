@@ -3,11 +3,9 @@ import { Info } from 'lucide-react'
 import { Controller, type Control, type FieldErrors } from 'react-hook-form'
 import { catalogos } from '@/api/endpoints'
 import { CampoFormulario } from '@/components/ui/CampoFormulario'
-import { clasesControl } from '@/components/ui/estilosControl'
 import { CampoNumerico } from '@/components/ui/CampoNumerico'
 import { ComboBox } from '@/components/ui/ComboBox'
 import { SeccionFormulario } from '@/components/ui/SeccionFormulario'
-import { cn } from '@/lib/utils'
 import type { FormularioPublicacion } from './esquema'
 
 interface Props {
@@ -19,19 +17,11 @@ interface Props {
 const TRANSMISIONES_QUE_SE_CAPTURAN = ['Automatica', 'Manual']
 
 export function SeccionEspecificaciones({ control, errors }: Props) {
-  const { data: ciudades } = useQuery({
-    queryKey: ['catalogos', 'ciudades'],
-    queryFn: catalogos.ciudades,
-    staleTime: Infinity,
-  })
-
   const { data: opciones } = useQuery({
     queryKey: ['catalogos', 'opciones-vehiculo'],
     queryFn: catalogos.opcionesVehiculo,
     staleTime: Infinity,
   })
-
-  const opcionesCiudad = (ciudades ?? []).map((c) => ({ valor: c, etiqueta: c }))
 
   // El catálogo publica también `Secuencial` y `CVT` —hay vehículos antiguos con esos valores y sus
   // etiquetas se siguen resolviendo—, pero al publicar el negocio solo distingue estas dos.
@@ -43,74 +33,9 @@ export function SeccionEspecificaciones({ control, errors }: Props) {
   return (
     <SeccionFormulario
       titulo="Especificaciones técnicas"
-      descripcion="Detalles mecánicos y de matrícula."
+      descripcion="Detalles mecánicos y condiciones de venta."
       Icono={Info}
     >
-      <CampoFormulario etiqueta="Placa" htmlFor="placa" requerido error={errors.placa?.message}>
-        <Controller
-          control={control}
-          name="placa"
-          render={({ field }) => (
-            <input
-              {...field}
-              id="placa"
-              value={field.value ?? ''}
-              placeholder="ABC-123"
-              // La placa se guarda normalizada, así que se muestra en mayúsculas desde el inicio.
-              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-              aria-invalid={Boolean(errors.placa) || undefined}
-              className={cn(
-                clasesControl,
-                errors.placa ? 'border-destructive' : 'border-input',
-              )}
-            />
-          )}
-        />
-      </CampoFormulario>
-
-      <CampoFormulario
-        etiqueta="Ciudad de matrícula"
-        htmlFor="ciudad-matricula"
-        error={errors.ciudadMatricula?.message}
-      >
-        <Controller
-          control={control}
-          name="ciudadMatricula"
-          render={({ field }) => (
-            <ComboBox
-              id="ciudad-matricula"
-              valor={field.value ?? ''}
-              onCambio={field.onChange}
-              textoVacio="Selecciona la ciudad"
-              opciones={opcionesCiudad}
-            />
-          )}
-        />
-      </CampoFormulario>
-
-      <CampoFormulario
-        etiqueta="Ubicación"
-        htmlFor="ciudad"
-        requerido
-        error={errors.ciudad?.message}
-        ayuda="Dónde está el vehículo para verlo."
-      >
-        <Controller
-          control={control}
-          name="ciudad"
-          render={({ field }) => (
-            <ComboBox
-              id="ciudad"
-              valor={field.value ?? ''}
-              onCambio={field.onChange}
-              textoVacio="Selecciona la ciudad"
-              invalido={Boolean(errors.ciudad)}
-              opciones={opcionesCiudad}
-            />
-          )}
-        />
-      </CampoFormulario>
-
       <CampoFormulario
         etiqueta="Kilometraje"
         htmlFor="kilometraje"

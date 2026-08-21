@@ -67,6 +67,11 @@ function Editor({ vehiculo }: { vehiculo: VehiculoDetalle }) {
 
   const puedeEditar = puedeGestionarVehiculo(usuario, vehiculo.publicadoPorUsuarioId)
 
+  // Con la publicación pagada, los datos principales quedan fijos. La excepción es un vehículo
+  // antiguo sin ubicación guardada: el formulario la exige, y bloquearla sin valor lo dejaría
+  // imposible de guardar. La API aplica la misma regla, esto es solo lo que ve el asesor.
+  const datosPrincipalesBloqueados = vehiculo.publicacionPagada && Boolean(vehiculo.ciudad)
+
   const guardar = useMutation({
     mutationFn: async ({
       datos,
@@ -131,6 +136,7 @@ function Editor({ vehiculo }: { vehiculo: VehiculoDetalle }) {
         valoresIniciales={aValoresFormulario(vehiculo)}
         imagenesIniciales={aImagenesFormulario(vehiculo)}
         urlsPersistidas={vehiculo.imagenes.map((i) => i.url)}
+        datosPrincipalesBloqueados={datosPrincipalesBloqueados}
         textoEnviar="Guardar cambios"
         enviando={guardar.isPending}
         error={guardar.error}

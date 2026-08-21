@@ -172,6 +172,15 @@ el comportamiento es idéntico en todas las plataformas y las listas largas se v
 - **Modelo con autocompletar**: sugiere las líneas del catálogo de la marca elegida y además deja
   escribir una nueva, avisando de que se creará. La API la da de alta si no existe, así el asesor
   no queda bloqueado por un modelo aún no registrado y el catálogo sigue sirviendo para filtrar.
+- **Placa, ciudad de matrícula y ubicación van en «Datos principales»**, no en las especificaciones
+  técnicas: identifican al vehículo, y el asesor las tiene a mano al empezar en lugar de a mitad
+  del formulario. «Especificaciones técnicas» queda con lo mecánico y lo comercial.
+- **Con la publicación pagada, «Datos principales» queda en solo lectura** y lo explica con una
+  nota en la propia sección: el cobro es por *ese* vehículo, no por un espacio reutilizable para
+  otro. La API aplica la misma regla —rechaza con `vehiculo.datos_principales_bloqueados`—, así
+  que el bloqueo no depende de la interfaz. Única excepción: si el vehículo no tiene ubicación
+  guardada la sección sigue editable, porque el formulario la exige y bloquearla vacía dejaría la
+  publicación imposible de guardar.
 - **Cilindraje en centímetros cúbicos** (`2.000`), no en litros: guardado como número, permite
   filtrar y ordenar más adelante.
 - **Color es texto libre**, no un desplegable: la gama real («Azul Océano», «Gris Meteoro») no cabe

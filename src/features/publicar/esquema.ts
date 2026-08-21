@@ -28,7 +28,6 @@ export const esquemaPublicacion = z.object({
 
   color: z.string().min(1, 'Selecciona el color.'),
 
-  // --- Especificaciones técnicas ---
   placa: z
     .string()
     .trim()
@@ -39,6 +38,7 @@ export const esquemaPublicacion = z.object({
 
   ciudad: z.string().min(1, 'Selecciona la ubicación.'),
 
+  // --- Especificaciones técnicas ---
   kilometraje: z
     .number({ message: 'Indica el kilometraje.' })
     .int()

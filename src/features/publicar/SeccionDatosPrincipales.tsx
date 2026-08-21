@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Car } from 'lucide-react'
+import { Car, Lock } from 'lucide-react'
 import {
   Controller,
   type Control,
@@ -20,9 +20,21 @@ interface Props {
   errors: FieldErrors<FormularioPublicacion>
   watch: UseFormWatch<FormularioPublicacion>
   setValue: UseFormSetValue<FormularioPublicacion>
+  /**
+   * Deja la sección en solo lectura. Estos campos son la identidad de la publicación: una vez
+   * pagada no pueden cambiar, porque el cobro es por *este* vehículo y no por un espacio
+   * reutilizable para otro. El resto del formulario sigue editable.
+   */
+  bloqueada?: boolean
 }
 
-export function SeccionDatosPrincipales({ control, errors, watch, setValue }: Props) {
+export function SeccionDatosPrincipales({
+  control,
+  errors,
+  watch,
+  setValue,
+  bloqueada = false,
+}: Props) {
   const marcaId = watch('marcaId')
 
   const { data: marcas } = useQuery({
@@ -51,12 +63,51 @@ export function SeccionDatosPrincipales({ control, errors, watch, setValue }: Pr
     staleTime: Infinity,
   })
 
+  const { data: ciudades } = useQuery({
+    queryKey: ['catalogos', 'ciudades'],
+    queryFn: catalogos.ciudades,
+    staleTime: Infinity,
+  })
+
+  const opcionesCiudad = (ciudades ?? []).map((c) => ({ valor: c, etiqueta: c }))
+
   return (
     <SeccionFormulario
       titulo="Datos principales"
       descripcion="Información básica de identificación del vehículo."
       Icono={Car}
+      aviso={
+        bloqueada ? (
+          <p className="flex items-start gap-2.5 rounded-xl border border-border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
+            <Lock className="mt-px size-3.5 shrink-0" aria-hidden />
+            <span>
+              La publicación de este vehículo ya está pagada, así que sus datos principales no se
+              pueden modificar. El resto del formulario sigue disponible.
+            </span>
+          </p>
+        ) : undefined
+      }
     >
+      <CampoFormulario etiqueta="Placa" htmlFor="placa" requerido error={errors.placa?.message}>
+        <Controller
+          control={control}
+          name="placa"
+          render={({ field }) => (
+            <input
+              {...field}
+              id="placa"
+              value={field.value ?? ''}
+              placeholder="ABC-123"
+              disabled={bloqueada}
+              // La placa se guarda normalizada, así que se muestra en mayúsculas desde el inicio.
+              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+              aria-invalid={Boolean(errors.placa) || undefined}
+              className={cn(clasesControl, errors.placa ? 'border-destructive' : 'border-input')}
+            />
+          )}
+        />
+      </CampoFormulario>
+
       <CampoFormulario etiqueta="Marca" htmlFor="marca" requerido error={errors.marcaId?.message}>
         <Controller
           control={control}
@@ -72,6 +123,7 @@ export function SeccionDatosPrincipales({ control, errors, watch, setValue }: Pr
                 setValue('lineaId', undefined)
               }}
               textoVacio="Selecciona la marca"
+              deshabilitado={bloqueada}
               invalido={Boolean(errors.marcaId)}
               opciones={(marcas ?? []).map((m) => ({ valor: m.id, etiqueta: m.nombre }))}
             />
@@ -101,7 +153,7 @@ export function SeccionDatosPrincipales({ control, errors, watch, setValue }: Pr
                 setValue('lineaId', existente?.id)
               }}
               permitirCrear
-              deshabilitado={!marcaId}
+              deshabilitado={bloqueada || !marcaId}
               invalido={Boolean(errors.lineaNombre)}
               textoVacio="Ej: Corolla Cross"
             />
@@ -119,6 +171,7 @@ export function SeccionDatosPrincipales({ control, errors, watch, setValue }: Pr
               id="version"
               value={field.value ?? ''}
               placeholder="Ej: XLI Híbrido"
+              disabled={bloqueada}
               className={cn(clasesControl, 'border-input')}
             />
           )}
@@ -135,6 +188,7 @@ export function SeccionDatosPrincipales({ control, errors, watch, setValue }: Pr
               valor={field.value ? String(field.value) : ''}
               onCambio={(v) => field.onChange(v ? Number(v) : undefined)}
               textoVacio="Selecciona el modelo"
+              deshabilitado={bloqueada}
               invalido={Boolean(errors.modelo)}
               opciones={aniosDisponibles.map((a) => ({ valor: String(a), etiqueta: String(a) }))}
             />
@@ -157,6 +211,7 @@ export function SeccionDatosPrincipales({ control, errors, watch, setValue }: Pr
               valor={field.value ?? ''}
               onCambio={field.onChange}
               textoVacio="Selecciona el tipo"
+              deshabilitado={bloqueada}
               invalido={Boolean(errors.tipoVehiculo)}
               opciones={(opciones?.tiposVehiculo ?? []).map((o) => ({
                 valor: o.nombre,
@@ -188,6 +243,7 @@ export function SeccionDatosPrincipales({ control, errors, watch, setValue }: Pr
                 value={field.value ?? ''}
                 placeholder="Ej: Blanco Perla"
                 autoComplete="off"
+                disabled={bloqueada}
                 aria-invalid={Boolean(errors.color) || undefined}
                 className={cn(
                   clasesControl,
@@ -201,6 +257,51 @@ export function SeccionDatosPrincipales({ control, errors, watch, setValue }: Pr
                 ))}
               </datalist>
             </>
+          )}
+        />
+      </CampoFormulario>
+
+      <CampoFormulario
+        etiqueta="Ciudad de matrícula"
+        htmlFor="ciudad-matricula"
+        error={errors.ciudadMatricula?.message}
+      >
+        <Controller
+          control={control}
+          name="ciudadMatricula"
+          render={({ field }) => (
+            <ComboBox
+              id="ciudad-matricula"
+              valor={field.value ?? ''}
+              onCambio={field.onChange}
+              textoVacio="Selecciona la ciudad"
+              deshabilitado={bloqueada}
+              opciones={opcionesCiudad}
+            />
+          )}
+        />
+      </CampoFormulario>
+
+      <CampoFormulario
+        etiqueta="Ubicación"
+        htmlFor="ciudad"
+        requerido
+        error={errors.ciudad?.message}
+        ayuda="Dónde está el vehículo para verlo."
+      >
+        <Controller
+          control={control}
+          name="ciudad"
+          render={({ field }) => (
+            <ComboBox
+              id="ciudad"
+              valor={field.value ?? ''}
+              onCambio={field.onChange}
+              textoVacio="Selecciona la ciudad"
+              deshabilitado={bloqueada}
+              invalido={Boolean(errors.ciudad)}
+              opciones={opcionesCiudad}
+            />
           )}
         />
       </CampoFormulario>
