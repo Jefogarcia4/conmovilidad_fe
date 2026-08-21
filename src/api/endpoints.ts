@@ -97,12 +97,17 @@ export interface ImagenSubida {
 }
 
 export const archivos = {
-  /** Sube las imágenes al almacenamiento configurado y devuelve sus URLs públicas. */
-  subirImagenesVehiculo: (lista: File[]) => {
+  /**
+   * Sube las imágenes al almacenamiento configurado y devuelve sus URLs públicas.
+   *
+   * El endpoint admite varias por petición, pero el formulario manda una sola: ver
+   * `lib/subirImagenes.ts`, que es quien reparte la selección y controla avance y reintentos.
+   */
+  subirImagenesVehiculo: (lista: File[], signal?: AbortSignal) => {
     const cuerpo = new FormData()
     lista.forEach((f) => cuerpo.append('archivos', f))
 
-    return api.post<{ imagenes: ImagenSubida[] }>('/archivos/imagenes-vehiculo', cuerpo)
+    return api.post<{ imagenes: ImagenSubida[] }>('/archivos/imagenes-vehiculo', cuerpo, { signal })
   },
 
   eliminarImagenVehiculo: (url: string) =>

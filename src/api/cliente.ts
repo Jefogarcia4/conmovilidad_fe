@@ -134,7 +134,11 @@ async function ejecutarCrudo(ruta: string, opciones: OpcionesPeticion = {}): Pro
       `${BASE}${ruta}`,
       construirPeticion(sinAutenticacion ? null : sesion.accessToken),
     )
-  } catch {
+  } catch (e) {
+    // Una cancelación —el tiempo máximo de una subida, por ejemplo— no es un fallo de red: se
+    // propaga tal cual para que quien la pidió la distinga y decida si reintenta.
+    if (e instanceof DOMException && e.name === 'AbortError') throw e
+
     throw new ApiError(0, 'No pudimos conectar con el servidor. Revisa tu conexión.')
   }
 

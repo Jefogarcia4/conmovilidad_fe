@@ -185,7 +185,22 @@ el comportamiento es idéntico en todas las plataformas y las listas largas se v
 - **La galería se reordena arrastrando** y la primera queda marcada como principal, que es la que
   se muestra en el catálogo.
 - **Formatos**: JPEG, PNG, WebP y HEIC. Se descartó RAW —pesa 20-50 MB y nadie lo sube desde un
-  móvil a un marketplace—; el HEIC de iPhone lo convierte la API a JPEG.
+  móvil a un marketplace—; el HEIC de iPhone lo recodifica la API a WebP.
+- **Cada foto se recodifica en el navegador antes de enviarla** (`lib/comprimirImagen.ts`): 2000 px
+  de lado mayor y JPEG al 85 %, con lo que una foto de iPhone baja de 3-15 MB a 300-600 KB. Es la
+  diferencia entre subir veinte fotos en segundos o en minutos, y minutos era directamente un
+  error: el balanceador de App Service corta a los 230 s con un 502. No se pierde calidad visible
+  porque la API reduce a 1600 px de todos modos. Si algo falla —un HEIC que el navegador no sabe
+  decodificar, memoria insuficiente— se manda el original y la API se encarga: publicar nunca
+  depende de que la compresión funcione.
+- **La orientación de la cámara se sondea, no se supone.** Al recodificar se pierde el EXIF, así
+  que el giro tiene que quedar grabado en los píxeles; pero los navegadores vigentes ya lo aplican
+  al decodificar y volver a girar dejaría **todas** las fotos del iPhone tumbadas. Una foto de
+  prueba de 2×1 con `Orientation = 6` resuelve la duda una vez por sesión.
+- **Se sube una foto por petición, tres en paralelo** (`lib/subirImagenes.ts`), con reintento ante
+  fallos de red o 5xx y avance visible. Las veinte en un solo `FormData` eran todo o nada: si
+  fallaba la decimoctava se perdían las diecisiete anteriores. Ahora las que entran se conservan y
+  el aviso dice cuáles repetir.
 
 ## Portal de administración
 

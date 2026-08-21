@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 import { GripVertical, Image as ImagenIcono, Loader2, Star, Trash2, UploadCloud } from 'lucide-react'
 import { archivos } from '@/api/endpoints'
-import { ApiError } from '@/api/cliente'
 import { Alerta } from '@/components/ui/Alerta'
 import { resolverUrlImagen } from '@/lib/imagenes'
+import { subirImagenesVehiculo, type FotoFallida } from '@/lib/subirImagenes'
 import { cn } from '@/lib/utils'
 
 export interface ImagenPublicacion {
@@ -28,16 +28,46 @@ interface Props {
 const ACEPTA = 'image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,.heic,.heif'
 const MAXIMO = 20
 
+/**
+ * Un único aviso con todo lo que no entró. Con veinte fotos en juego, decir solo «hubo un error»
+ * deja al asesor sin saber cuáles repetir.
+ */
+function resumirFallos(
+  fallidas: FotoFallida[],
+  intentadas: number,
+  descartadas: number,
+): string | null {
+  const avisos: string[] = []
+
+  if (fallidas.length > 0 && fallidas.length === intentadas) {
+    avisos.push(`No pudimos subir las imágenes: ${fallidas[0]?.motivo ?? 'error inesperado'}.`)
+  } else if (fallidas.length > 0) {
+    const detalle = fallidas.map((f) => `«${f.nombre}» (${f.motivo})`).join(', ')
+    const verbo = fallidas.length === 1 ? 'Quedó fuera' : 'Quedaron fuera'
+    avisos.push(`Subimos ${intentadas - fallidas.length} de ${intentadas}. ${verbo}: ${detalle}.`)
+  }
+
+  if (descartadas > 0) {
+    const sobrantes =
+      descartadas === 1 ? 'Se omitió 1 imagen' : `Se omitieron ${descartadas} imágenes`
+    avisos.push(`${sobrantes}: el máximo es ${MAXIMO}.`)
+  }
+
+  return avisos.length > 0 ? avisos.join(' ') : null
+}
+
 export function SeccionFotografias({ imagenes, urlsPersistidas, onCambio, error }: Props) {
   const entrada = useRef<HTMLInputElement>(null)
-  const [subiendo, setSubiendo] = useState(false)
+  const [progreso, setProgreso] = useState<{ hechas: number; total: number } | null>(null)
   const [errorSubida, setErrorSubida] = useState<string | null>(null)
   const [arrastrando, setArrastrando] = useState(false)
   const [arrastrado, setArrastrado] = useState<number | null>(null)
 
+  const subiendo = progreso !== null
+
   const subir = async (lista: FileList | File[]) => {
     const seleccion = Array.from(lista)
-    if (seleccion.length === 0) return
+    if (seleccion.length === 0 || subiendo) return
 
     setErrorSubida(null)
 
@@ -47,25 +77,32 @@ export function SeccionFotografias({ imagenes, urlsPersistidas, onCambio, error 
       return
     }
 
-    setSubiendo(true)
+    const aSubir = seleccion.slice(0, disponibles)
+    setProgreso({ hechas: 0, total: aSubir.length })
 
     try {
-      const resultado = await archivos.subirImagenesVehiculo(seleccion.slice(0, disponibles))
-
-      onCambio([
-        ...imagenes,
-        ...resultado.imagenes.map((i) => ({
-          url: i.url,
-          urlMiniatura: i.urlMiniatura,
-          nombre: i.nombreOriginal,
-        })),
-      ])
-    } catch (e) {
-      setErrorSubida(
-        e instanceof ApiError ? e.message : 'No pudimos subir las imágenes. Inténtalo de nuevo.',
+      // Se suben una a una: las que entren se conservan aunque alguna falle, así que la lista se
+      // actualiza con lo que haya llegado y el aviso resume el resto.
+      const { imagenes: subidas, fallidas } = await subirImagenesVehiculo(aSubir, (hechas, total) =>
+        setProgreso({ hechas, total }),
       )
+
+      if (subidas.length > 0) {
+        onCambio([
+          ...imagenes,
+          ...subidas.map((i) => ({
+            url: i.url,
+            urlMiniatura: i.urlMiniatura,
+            nombre: i.nombreOriginal,
+          })),
+        ])
+      }
+
+      setErrorSubida(resumirFallos(fallidas, aSubir.length, seleccion.length - aSubir.length))
+    } catch {
+      setErrorSubida('No pudimos subir las imágenes. Inténtalo de nuevo.')
     } finally {
-      setSubiendo(false)
+      setProgreso(null)
       // Permite volver a elegir el mismo archivo si el usuario lo borra y lo vuelve a agregar.
       if (entrada.current) entrada.current.value = ''
     }
@@ -145,12 +182,23 @@ export function SeccionFotografias({ imagenes, urlsPersistidas, onCambio, error 
           </span>
 
           <span className="text-sm text-foreground">
-            {subiendo ? 'Subiendo imágenes…' : 'Arrastra imágenes aquí o haz clic para seleccionar'}
+            {progreso
+              ? `Subiendo ${progreso.hechas} de ${progreso.total} imágenes…`
+              : 'Arrastra imágenes aquí o haz clic para seleccionar'}
           </span>
 
-          <span className="text-xs text-muted-foreground">
-            Formatos soportados: JPEG, PNG, WebP, HEIC
-          </span>
+          {progreso ? (
+            <span className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted" aria-hidden>
+              <span
+                className="block h-full rounded-full bg-cta transition-[width] duration-300"
+                style={{ width: `${Math.round((progreso.hechas / progreso.total) * 100)}%` }}
+              />
+            </span>
+          ) : (
+            <span className="text-xs text-muted-foreground">
+              Formatos soportados: JPEG, PNG, WebP, HEIC
+            </span>
+          )}
         </button>
 
         <input
