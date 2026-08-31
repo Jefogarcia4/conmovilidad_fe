@@ -36,6 +36,7 @@ export function SeccionDatosPrincipales({
   bloqueada = false,
 }: Props) {
   const marcaId = watch('marcaId')
+  const marcaNombre = watch('marcaNombre')
 
   const { data: marcas } = useQuery({
     queryKey: ['catalogos', 'marcas'],
@@ -43,7 +44,8 @@ export function SeccionDatosPrincipales({
     staleTime: Infinity,
   })
 
-  // Las líneas alimentan el autocompletar y solo tienen sentido con una marca elegida.
+  // Las líneas alimentan el autocompletar y solo tienen sentido con una marca del catálogo: una
+  // marca recién escrita todavía no existe, así que no hay nada que sugerir.
   const { data: lineas } = useQuery({
     queryKey: ['catalogos', 'lineas', marcaId],
     queryFn: () => catalogos.lineas(marcaId),
@@ -108,24 +110,36 @@ export function SeccionDatosPrincipales({
         />
       </CampoFormulario>
 
-      <CampoFormulario etiqueta="Marca" htmlFor="marca" requerido error={errors.marcaId?.message}>
+      <CampoFormulario
+        etiqueta="Marca"
+        htmlFor="marca"
+        requerido
+        error={errors.marcaNombre?.message}
+        ayuda="Escribe para buscar o agregar una nueva."
+      >
         <Controller
           control={control}
-          name="marcaId"
+          name="marcaNombre"
           render={({ field }) => (
             <ComboBox
               id="marca"
               valor={field.value ?? ''}
-              onCambio={(v) => {
-                field.onChange(v)
+              // Igual que la línea: la marca se identifica aquí por nombre y el id se resuelve al
+              // elegirla del catálogo. Sin id, la API la da de alta.
+              opciones={(marcas ?? []).map((m) => ({ valor: m.nombre, etiqueta: m.nombre }))}
+              onCambio={(nombre, esNuevo) => {
+                field.onChange(nombre)
+                const existente = esNuevo ? undefined : marcas?.find((m) => m.nombre === nombre)
+                setValue('marcaId', existente?.id)
+
                 // La línea elegida pertenecía a la marca anterior: deja de ser válida.
                 setValue('lineaNombre', '')
                 setValue('lineaId', undefined)
               }}
-              textoVacio="Selecciona la marca"
+              permitirCrear
               deshabilitado={bloqueada}
-              invalido={Boolean(errors.marcaId)}
-              opciones={(marcas ?? []).map((m) => ({ valor: m.id, etiqueta: m.nombre }))}
+              invalido={Boolean(errors.marcaNombre)}
+              textoVacio="Ej: Mazda"
             />
           )}
         />
@@ -136,7 +150,11 @@ export function SeccionDatosPrincipales({
         htmlFor="linea"
         requerido
         error={errors.lineaNombre?.message}
-        ayuda={marcaId ? 'Escribe para buscar o agregar una nueva.' : 'Selecciona primero la marca.'}
+        ayuda={
+          marcaNombre
+            ? 'Escribe para buscar o agregar una nueva.'
+            : 'Indica primero la marca.'
+        }
       >
         <Controller
           control={control}
@@ -153,7 +171,7 @@ export function SeccionDatosPrincipales({
                 setValue('lineaId', existente?.id)
               }}
               permitirCrear
-              deshabilitado={bloqueada || !marcaId}
+              deshabilitado={bloqueada || !marcaNombre}
               invalido={Boolean(errors.lineaNombre)}
               textoVacio="Ej: Corolla Cross"
             />

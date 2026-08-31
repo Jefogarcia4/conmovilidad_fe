@@ -157,7 +157,7 @@ el foco real**, que es lo que permite seguir escribiendo mientras se navega con 
 
 - Flechas para moverse, `Enter` para elegir, `Escape` para cerrar, `Tab` para salir.
 - El resaltado sigue al ratón, para que puntero y teclado no se contradigan.
-- Con `permitirCrear` (campo «Modelo») ofrece «Agregar «X»» cuando lo escrito no está en la lista.
+- Con `permitirCrear` (campo «Línea») ofrece «Agregar «X»» cuando lo escrito no está en la lista.
 - Tras elegir devuelve el foco al campo sin reabrir la lista: un `focus()` posterior a una
   selección se ignora a propósito, o al hacer clic en una opción el desplegable revolvería a abrirse.
 
@@ -170,9 +170,14 @@ el comportamiento es idéntico en todas las plataformas y las listas largas se v
   («Corolla Cross») y el desplegable es el año. Aquí se llaman **«Línea»** y **«Año»**: dos
   etiquetas idénticas en un mismo formulario confunden al usuario y rompen la accesibilidad, y
   «Línea» es además como se llama el dato en la API y en la base de datos.
-- **Línea con autocompletar**: sugiere las del catálogo de la marca elegida y además deja escribir
-  una nueva, avisando de que se creará. La API la da de alta si no existe, así el asesor no queda
-  bloqueado por una línea aún no registrada y el catálogo sigue sirviendo para filtrar.
+- **Marca y línea con autocompletar**: las dos sugieren lo que hay en el catálogo y las dos dejan
+  escribir un valor nuevo, avisando de que se creará. La API lo da de alta si no existe, así el
+  asesor no queda bloqueado por una marca o una línea aún no registradas y el catálogo sigue
+  sirviendo para filtrar. En el formulario se manda el id cuando lo escrito coincide con el
+  catálogo y el nombre cuando no; la API resuelve las dos formas.
+- **La línea se habilita en cuanto hay marca**, sea del catálogo o recién escrita. Lo que sí
+  depende del catálogo son las sugerencias: una marca que acaba de escribirse todavía no tiene
+  líneas que ofrecer.
 - **Placa, ciudad de matrícula y ubicación van en «Datos principales»**, no en las especificaciones
   técnicas: identifican al vehículo, y el asesor las tiene a mano al empezar en lugar de a mitad
   del formulario. «Especificaciones técnicas» queda con lo mecánico y lo comercial.

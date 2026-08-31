@@ -116,7 +116,9 @@ export const archivos = {
 
 export interface CrearVehiculoRequest {
   placa: string
-  marcaId: string
+  /** Marca del catálogo. Si se omite, la API resuelve o crea la de `marcaNombre`. */
+  marcaId?: string
+  marcaNombre?: string
   lineaId?: string
   lineaNombre?: string
   version?: string

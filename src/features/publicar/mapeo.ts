@@ -20,8 +20,10 @@ export function aPeticionVehiculo(
 ) {
   return {
     placa: datos.placa,
-    marcaId: datos.marcaId,
     // Si lo escrito coincide con el catálogo se manda el id; si no, el nombre y la API lo crea.
+    // Vale igual para la marca y para la línea.
+    marcaId: datos.marcaId,
+    marcaNombre: datos.marcaId ? undefined : datos.marcaNombre,
     lineaId: datos.lineaId,
     lineaNombre: datos.lineaId ? undefined : datos.lineaNombre,
     version: datos.version || undefined,
@@ -60,6 +62,7 @@ export function aPeticionVehiculo(
 /** Rellena el formulario con lo que ya tiene guardado el vehículo. */
 export function aValoresFormulario(vehiculo: VehiculoDetalle): FormularioPublicacion {
   return {
+    marcaNombre: vehiculo.marca,
     marcaId: vehiculo.marcaId,
     lineaNombre: vehiculo.linea,
     lineaId: vehiculo.lineaId,

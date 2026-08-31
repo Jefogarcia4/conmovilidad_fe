@@ -8,7 +8,11 @@ const anioActual = new Date().getFullYear()
  */
 export const esquemaPublicacion = z.object({
   // --- Datos principales ---
-  marcaId: z.string().min(1, 'Selecciona la marca.'),
+  /** Marca escrita o elegida del catálogo, igual que la línea. */
+  marcaNombre: z.string().trim().min(1, 'Indica la marca.').max(80),
+
+  /** Se rellena solo si lo escrito coincide con una marca existente. */
+  marcaId: z.string().optional(),
 
   /** Línea escrita o elegida del catálogo. */
   lineaNombre: z.string().trim().min(1, 'Indica la línea.').max(100),
@@ -82,7 +86,7 @@ export const esquemaPublicacion = z.object({
 export type FormularioPublicacion = z.infer<typeof esquemaPublicacion>
 
 export const valoresIniciales: Partial<FormularioPublicacion> = {
-  marcaId: '',
+  marcaNombre: '',
   lineaNombre: '',
   version: '',
   tipoVehiculo: '',
