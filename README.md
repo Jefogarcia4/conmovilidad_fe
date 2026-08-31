@@ -167,11 +167,12 @@ el comportamiento es idéntico en todas las plataformas y las listas largas se v
 ## Decisiones de «Publicar vehículo»
 
 - **Los dos campos «Modelo» del mockup son cosas distintas**: el de texto es la línea comercial
-  («Corolla Cross») y el desplegable es el año. Aquí el segundo se llama **«Año»**, porque dos
-  etiquetas idénticas en un mismo formulario confunden al usuario y rompen la accesibilidad.
-- **Modelo con autocompletar**: sugiere las líneas del catálogo de la marca elegida y además deja
-  escribir una nueva, avisando de que se creará. La API la da de alta si no existe, así el asesor
-  no queda bloqueado por un modelo aún no registrado y el catálogo sigue sirviendo para filtrar.
+  («Corolla Cross») y el desplegable es el año. Aquí se llaman **«Línea»** y **«Año»**: dos
+  etiquetas idénticas en un mismo formulario confunden al usuario y rompen la accesibilidad, y
+  «Línea» es además como se llama el dato en la API y en la base de datos.
+- **Línea con autocompletar**: sugiere las del catálogo de la marca elegida y además deja escribir
+  una nueva, avisando de que se creará. La API la da de alta si no existe, así el asesor no queda
+  bloqueado por una línea aún no registrada y el catálogo sigue sirviendo para filtrar.
 - **Placa, ciudad de matrícula y ubicación van en «Datos principales»**, no en las especificaciones
   técnicas: identifican al vehículo, y el asesor las tiene a mano al empezar en lugar de a mitad
   del formulario. «Especificaciones técnicas» queda con lo mecánico y lo comercial.

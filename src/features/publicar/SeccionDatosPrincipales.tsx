@@ -132,11 +132,11 @@ export function SeccionDatosPrincipales({
       </CampoFormulario>
 
       <CampoFormulario
-        etiqueta="Modelo"
+        etiqueta="Línea"
         htmlFor="linea"
         requerido
         error={errors.lineaNombre?.message}
-        ayuda={marcaId ? 'Escribe para buscar o agregar uno nuevo.' : 'Selecciona primero la marca.'}
+        ayuda={marcaId ? 'Escribe para buscar o agregar una nueva.' : 'Selecciona primero la marca.'}
       >
         <Controller
           control={control}
@@ -187,7 +187,7 @@ export function SeccionDatosPrincipales({
               id="modelo"
               valor={field.value ? String(field.value) : ''}
               onCambio={(v) => field.onChange(v ? Number(v) : undefined)}
-              textoVacio="Selecciona el modelo"
+              textoVacio="Selecciona el año"
               deshabilitado={bloqueada}
               invalido={Boolean(errors.modelo)}
               opciones={aniosDisponibles.map((a) => ({ valor: String(a), etiqueta: String(a) }))}

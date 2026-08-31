@@ -11,7 +11,7 @@ export const esquemaPublicacion = z.object({
   marcaId: z.string().min(1, 'Selecciona la marca.'),
 
   /** Línea escrita o elegida del catálogo. */
-  lineaNombre: z.string().trim().min(1, 'Indica el modelo.').max(100),
+  lineaNombre: z.string().trim().min(1, 'Indica la línea.').max(100),
 
   /** Se rellena solo si lo escrito coincide con una línea existente. */
   lineaId: z.string().optional(),
@@ -101,5 +101,5 @@ export const valoresIniciales: Partial<FormularioPublicacion> = {
   esBlindado: false,
 }
 
-/** Años que ofrece el desplegable «Modelo», del más reciente al más antiguo. */
+/** Años que ofrece el desplegable «Año», del más reciente al más antiguo. */
 export const aniosDisponibles = Array.from({ length: 22 }, (_, i) => anioActual + 1 - i)

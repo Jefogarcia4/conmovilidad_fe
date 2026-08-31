@@ -35,7 +35,7 @@ export function InformacionVehiculo({ vehiculo }: { vehiculo: VehiculoDetalle })
     ['Placa', vehiculo.placa],
     ['Ciudad de matrícula', vehiculo.ciudadMatricula ?? null],
     ['Marca', vehiculo.marca],
-    ['Modelo', vehiculo.linea],
+    ['Línea', vehiculo.linea],
     ['Versión', vehiculo.version ?? null],
     ['Año', String(vehiculo.modelo)],
     ['Kilometraje', formatearKilometraje(vehiculo.kilometraje)],

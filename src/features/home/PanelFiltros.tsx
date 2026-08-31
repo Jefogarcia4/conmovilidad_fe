@@ -97,10 +97,10 @@ export function PanelFiltros({ valores, onCambio, totalResultados }: Props) {
           />
         </CampoFiltro>
 
-        <CampoFiltro etiqueta="Modelo" htmlFor="filtro-modelo">
+        <CampoFiltro etiqueta="Línea" htmlFor="filtro-linea">
           <ComboBox
-            id="filtro-modelo"
-            textoVacio="Todos los modelos"
+            id="filtro-linea"
+            textoVacio="Todas las líneas"
             valor={valores.lineaId ?? ''}
             onCambio={(v) => actualizar({ lineaId: v || undefined })}
             deshabilitado={!valores.marcaId}

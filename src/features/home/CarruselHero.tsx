@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import banner1 from '@/assets/banner_1.png'
-import banner2 from '@/assets/banner_2.jpg'
+import banner2 from '@/assets/banner_2.png'
 import banner3 from '@/assets/banner_3.png'
 
 interface Diapositiva {

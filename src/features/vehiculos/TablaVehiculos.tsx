@@ -37,7 +37,7 @@ export function TablaVehiculos({
                 Vehículo
               </th>
               <th className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">
-                Modelo
+                Año
               </th>
               <th className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">
                 Kilometraje
