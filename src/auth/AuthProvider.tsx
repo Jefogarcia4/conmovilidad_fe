@@ -15,11 +15,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const iniciarSesion = useCallback(async (email: string, password: string) => {
-    const auth = await autenticacion.login(email, password)
-    sesion.guardar(auth)
-    setUsuario(auth.usuario)
-  }, [])
+  const iniciarSesion = useCallback(
+    async (email: string, password: string, aceptaTerminos: boolean) => {
+      const auth = await autenticacion.login(email, password, aceptaTerminos)
+      sesion.guardar(auth)
+      setUsuario(auth.usuario)
+    },
+    [],
+  )
 
   const cerrarSesion = useCallback(async () => {
     const refreshToken = sesion.refreshToken

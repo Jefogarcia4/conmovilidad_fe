@@ -36,6 +36,12 @@ const TarifasPage = lazy(() =>
 const SuscripcionesPage = lazy(() =>
   import('./features/admin/SuscripcionesPage').then((m) => ({ default: m.SuscripcionesPage })),
 )
+const PqrsPage = lazy(() =>
+  import('./features/admin/PqrsPage').then((m) => ({ default: m.PqrsPage })),
+)
+const ContactoPage = lazy(() =>
+  import('./features/pqrs/ContactoPage').then((m) => ({ default: m.ContactoPage })),
+)
 const PublicarPage = lazy(() =>
   import('./features/publicar/PublicarPage').then((m) => ({ default: m.PublicarPage })),
 )
@@ -90,6 +96,7 @@ export default function App() {
                     <Route path="usuarios" element={<UsuariosPage />} />
                     <Route path="tarifas" element={<TarifasPage />} />
                     <Route path="suscripciones" element={<SuscripcionesPage />} />
+                    <Route path="pqrs" element={<PqrsPage />} />
                   </Route>
                 </Route>
 
@@ -98,7 +105,7 @@ export default function App() {
                 <Route path="/asesoria" element={<PendientePage titulo="Solicitar asesoría" />} />
                 <Route path="/habeas-data" element={<PendientePage titulo="Habeas Data" />} />
                 <Route path="/terminos" element={<PendientePage titulo="Términos y Condiciones" />} />
-                <Route path="/contacto" element={<PendientePage titulo="Contáctanos" />} />
+                <Route path="/contacto" element={<ContactoPage />} />
               </Route>
             </Route>
 

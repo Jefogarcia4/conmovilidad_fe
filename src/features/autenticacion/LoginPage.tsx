@@ -40,11 +40,12 @@ export function LoginPage() {
     defaultValues: { usuario: '', password: '', acepta: false as unknown as true },
   })
 
-  const onSubmit = handleSubmit(async ({ usuario, password }) => {
+  const onSubmit = handleSubmit(async ({ usuario, password, acepta }) => {
     setErrorGeneral(null)
 
     try {
-      await iniciarSesion(usuario, password)
+      // La casilla viaja a la API: es la que deja constancia de la primera aceptación.
+      await iniciarSesion(usuario, password, acepta)
 
       // Vuelve a donde el usuario intentaba entrar antes de que lo mandáramos al login.
       const destino = (ubicacion.state as { desde?: string } | null)?.desde ?? '/home'

@@ -217,6 +217,18 @@ el comportamiento es idéntico en todas las plataformas y las listas largas se v
   fallaba la decimoctava se perdían las diecisiete anteriores. Ahora las que entran se conservan y
   el aviso dice cuáles repetir.
 
+## PQRS
+
+- **«Contáctanos» es el formulario de PQRS.** Está dentro de la zona autenticada, así que no pide
+  nombre ni correo: ya están en la cuenta. Debajo del formulario, el usuario ve sus propios
+  radicados con el estado y la respuesta cuando llega —sin eso, responder desde el portal no le
+  llegaría a nadie—.
+- **La casilla de estado vive en su propio archivo** (`EtiquetaEstadoPqrs`) porque la comparten la
+  pantalla del usuario y la bandeja del portal, y mezclar componentes con utilidades en un mismo
+  módulo rompe el refresco en caliente de Vite (mismo motivo que `estilosControl`).
+- **El buscador de la bandeja va contra la API con `useDebounce`**: filtra sobre el total y no
+  sobre la página a la vista, que devolvería resultados falsos.
+
 ## Suscripciones y cupo de publicación
 
 - **El aviso del formulario cambia según cómo se vaya a pagar.** Sin suscripción anuncia el precio

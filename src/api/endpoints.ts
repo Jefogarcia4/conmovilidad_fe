@@ -23,10 +23,10 @@ export interface ActivarCuentaRequest {
 }
 
 export const autenticacion = {
-  login: (numeroDocumento: string, password: string) =>
+  login: (numeroDocumento: string, password: string, aceptaTerminos: boolean) =>
     api.post<AuthResponse>(
       '/auth/login',
-      { numeroDocumento, password },
+      { numeroDocumento, password, aceptaTerminos },
       { sinAutenticacion: true },
     ),
 
