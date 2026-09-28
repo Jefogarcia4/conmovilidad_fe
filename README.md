@@ -217,6 +217,16 @@ el comportamiento es idéntico en todas las plataformas y las listas largas se v
   fallaba la decimoctava se perdían las diecisiete anteriores. Ahora las que entran se conservan y
   el aviso dice cuáles repetir.
 
+## Módulos que se pueden apagar
+
+- **`/publish` consulta `GET /api/configuracion/modulos` antes de pintar nada.** Se espera a la
+  respuesta en lugar de mostrar el formulario y cambiarlo por el aviso medio segundo después.
+- **Solo se da por apagado cuando la API lo dice expresamente** (`vehiculosHabilitados === false`).
+  Si la consulta falla se deja pasar, igual que la API habilita el módulo cuando la variable no
+  está; y si de verdad estuviera apagado, el alta se rechaza del lado del servidor de todos modos.
+- El aviso no promete fecha de vuelta porque nadie la sabe, y aclara que los vehículos ya
+  publicados siguen en el catálogo: quien llega ahí necesita saber que no perdió nada.
+
 ## PQRS
 
 - **«Contáctanos» es el formulario de PQRS.** Está dentro de la zona autenticada, así que no pide
