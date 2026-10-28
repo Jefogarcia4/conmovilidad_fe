@@ -96,8 +96,22 @@ tienen mockup muestran un marcador.
 
 ## Decisiones del home
 
-- **Carrusel del hero**: 8 mensajes sobre 4 fotos, con autoplay de 6 s que se pausa al pasar el
-  ratón o al enfocar con teclado. Los mensajes están en `CarruselHero.tsx`.
+- **Carrusel del hero**: banners completos —el mensaje viene impreso en la imagen— con autoplay
+  de 6 s que se pausa al pasar el ratón o al enfocar con teclado. Agregar uno es sumar su entrada
+  a `DIAPOSITIVAS` en `CarruselHero.tsx`, con el `alt` transcribiendo el texto impreso.
+  - **En WebP, no PNG.** Los originales pesaban 6,9 MB entre los cinco y es lo primero que carga
+    el inicio; convertidos quedan en ~0,5 MB sin diferencia visible. Los `.png` se conservan en
+    `assets` como maestros, pero no se importan: lo que entra al bundle es el `.webp`.
+  - **No comparten proporción** (de 2.74:1 a 3.96:1). El contenedor fija una sola y cada imagen
+    entra con `object-contain`, así que ninguna se recorta; el hueco lo tapa la misma imagen
+    ampliada y desenfocada, no una franja plana.
+  - **Una diapositiva puede llevar `enlace`** y entonces se envuelve en un `<a>`. Lo pide el banner
+    de seguros, que trae impreso un botón «Explora todas las opciones»: sin enlace prometería algo
+    que no pasa al pulsarlo. Las ocultas llevan `inert` además de `aria-hidden`, porque
+    `pointer-events-none` frena el ratón pero no el tabulador, y un enlace enfocable dentro de algo
+    marcado como oculto deja al teclado recorriendo diapositivas que nadie ve.
+  - Los destinos del aliado viven en `features/credito/enlacesAliado.ts`, no sueltos en cada
+    componente: los mismos enlaces se usan en el panel del detalle y aquí.
 - **Filtro «Modelo»**: en el mockup va después de «Marca», así que se interpretó como la **línea**
   del vehículo (Mazda → CX-5), no como el año. En la API ese campo es `lineaId`; `modelo` allí es el
   año. El select se habilita solo al elegir marca, porque las líneas dependen de ella.
@@ -216,6 +230,19 @@ el comportamiento es idéntico en todas las plataformas y las listas largas se v
   fallos de red o 5xx y avance visible. Las veinte en un solo `FormData` eran todo o nada: si
   fallaba la decimoctava se perdían las diecisiete anteriores. Ahora las que entran se conservan y
   el aviso dice cuáles repetir.
+
+## Aviso de cupo de crédito
+
+- **El mismo componente sirve en el catálogo y en el detalle** (`features/credito/AvisoCupo`). En
+  el catálogo saluda por el nombre; en el detalle recibe el precio del vehículo y compara.
+- **El cupo se consulta a la API, no se lee de la sesión guardada.** Lo cambia el administrador —a
+  mano o por carga masiva— y un cupo desactualizado en pantalla es peor que no mostrarlo, porque
+  el usuario toma decisiones con él.
+- **Sin cupo asignado no se pinta nada.** A quien no tiene cupo no se le dice que su cupo no
+  alcanza: simplemente no se le habla de cupos. Por eso el contenedor del catálogo no reserva
+  espacio.
+- Cuando el vehículo **supera** el cupo, el aviso cambia de color y de texto: el magenta de marca
+  es para la buena noticia, no para la advertencia.
 
 ## Módulos que se pueden apagar
 

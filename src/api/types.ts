@@ -56,6 +56,10 @@ export interface UsuarioAutenticado {
   convenioNombre: string
   /** Un administrador fijó su contraseña: debe cambiarla antes de usar la aplicación. */
   debeCambiarPassword: boolean
+  /** Cupo de crédito aprobado, en pesos. Nulo si no se le ha asignado ninguno. */
+  cupoCredito?: number
+  /** Tasa pactada en porcentaje: `18.5` es 18,5 %. */
+  tasaInteres?: number
 }
 
 export interface AuthResponse {

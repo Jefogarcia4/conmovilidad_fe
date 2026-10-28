@@ -46,6 +46,10 @@ export interface UsuarioAdmin {
   activo: boolean
   debeCambiarPassword: boolean
   totalVehiculos: number
+  /** Cupo de crédito en pesos. Nulo si no se le ha asignado ninguno. */
+  cupoCredito?: number
+  /** Tasa pactada en porcentaje: `18.5` es 18,5 %. */
+  tasaInteres?: number
   ultimoAcceso?: string
   fechaCreacion: string
 }
@@ -65,6 +69,7 @@ export interface GuardarEmpresaRequest {
   ciudad?: string
 }
 
+/** `cupoCredito` y `tasaInteres` son opcionales: sin ellos el usuario queda sin cupo asignado. */
 export interface CrearUsuarioRequest {
   nombres: string
   apellidos: string
@@ -74,6 +79,8 @@ export interface CrearUsuarioRequest {
   rol: RolUsuario
   empresaId: string
   passwordInicial: string
+  cupoCredito?: number
+  tasaInteres?: number
 }
 
 export interface ActualizarUsuarioRequest {
@@ -84,6 +91,8 @@ export interface ActualizarUsuarioRequest {
   telefono?: string
   rol: RolUsuario
   empresaId: string
+  cupoCredito?: number
+  tasaInteres?: number
 }
 
 export const adminConvenios = {
@@ -177,11 +186,18 @@ export interface ResultadoImportacion {
   exito: boolean
   filasLeidas: number
   usuariosCreados: number
+  /**
+   * Filas cuyo documento ya existía: a esas no se les creó nada, se les actualizó el cupo y la
+   * tasa.
+   */
+  usuariosActualizados: number
   /** Primeros errores encontrados; el total va en `totalErrores`. */
   errores: ErrorImportacion[]
   totalErrores: number
   /** Nombre y documento de los primeros usuarios dados de alta; el total, en `usuariosCreados`. */
   creados: string[]
+  /** Documento y nuevos valores de los primeros actualizados. */
+  actualizados: string[]
 }
 
 export interface FiltroUsuarios {

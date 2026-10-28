@@ -31,6 +31,10 @@
   --color-accent: #ffe7f1;
   --color-accent-foreground: #8e0050;
 
+  /* Trámites de seguros: verde del aliado, fuera de la paleta de marca a propósito. */
+  --color-seguros: #64c975;
+  --color-seguros-hover: #57af66;
+
   --color-destructive: #e40014;
 
   --radius: 0.75rem;

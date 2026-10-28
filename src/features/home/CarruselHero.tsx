@@ -1,14 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import banner1 from '@/assets/banner_1.png'
-import banner2 from '@/assets/banner_2.png'
-import banner3 from '@/assets/banner_3.png'
+import { URL_SEGURO } from '@/features/credito/enlacesAliado'
+// En WebP: los PNG originales pesaban en conjunto catorce veces más, y son lo primero que carga
+// el inicio. Los .png siguen en `assets` como maestros, sin importarse.
+import banner1 from '@/assets/banner_1.webp'
+import banner2 from '@/assets/banner_2.webp'
+import banner3 from '@/assets/banner_3.webp'
+import banner4 from '@/assets/banner_4.webp'
+import banner5 from '@/assets/banner_5.webp'
 
 interface Diapositiva {
   imagen: string
   /** Los banners traen el mensaje impreso, así que el alt lo transcribe. */
   alt: string
+  /** Destino al pulsar el banner. Sin él, la diapositiva es solo una imagen. */
+  enlace?: string
 }
 
 const DIAPOSITIVAS: Diapositiva[] = [
@@ -23,6 +30,17 @@ const DIAPOSITIVAS: Diapositiva[] = [
   {
     imagen: banner3,
     alt: '¿Aún no tienes tu Tarjeta Virtual Presente? Actívala ahora y lleva la experiencia de compras online al siguiente nivel. Aplican términos y condiciones.',
+  },
+  {
+    imagen: banner4,
+    alt: 'Tienes un plan, nosotros el crédito para hacerlo realidad. Impulsamos tus sueños y te acompañamos para que los hagas realidad. Encuentra en Presente diferentes alternativas de financiación para acercarte cada vez más a tus metas.',
+  },
+  {
+    imagen: banner5,
+    alt: 'Seguro de vehículo para autos y motos: recorre y disfruta kilómetros con la tranquilidad de estar asegurado. Con la póliza de autos y motos estarás cubierto ante cualquier riesgo que pueda presentarse en la vía.',
+    // El banner trae impreso un botón «Explora todas las opciones»: sin enlace prometería algo
+    // que no ocurre al pulsarlo.
+    enlace: URL_SEGURO,
   },
 ]
 
@@ -56,40 +74,65 @@ export function CarruselHero() {
       onMouseLeave={() => setPausado(false)}
       onFocusCapture={() => setPausado(true)}
       onBlurCapture={() => setPausado(false)}
-      // Los banners no comparten proporción (3.96:1 los de Autos Galería, 2.83:1 el de Presente).
-      // El contenedor toma la más alta para que ninguno se recorte; el resto queda centrado.
+      // Los banners no comparten proporción: van de 2.74:1 a 3.96:1. El contenedor fija una sola
+      // y cada imagen entra con `object-contain`, así que ninguna se recorta nunca; la que no
+      // coincide queda centrada sobre el relleno desenfocado. Al agregar un banner no hay que
+      // tocar esta medida salvo que sea mucho más alto y el relleno se note de más.
       className="group relative aspect-[3840/1356] w-full overflow-hidden bg-primary"
     >
-      {DIAPOSITIVAS.map((d, i) => (
-        <div
-          key={`${d.imagen}-${i}`}
-          aria-hidden={i !== actual}
-          className={cn(
-            'absolute inset-0 transition-opacity duration-700 ease-in-out',
-            i === actual ? 'opacity-100' : 'pointer-events-none opacity-0',
-          )}
-        >
-          {/* Relleno: la misma imagen ampliada y desenfocada tapa las franjas que deja
-              object-contain, en vez de dejar barras planas de otro color. */}
-          <img
-            src={d.imagen}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 size-full scale-110 object-cover blur-2xl"
-            loading={i === 0 ? 'eager' : 'lazy'}
-          />
+      {DIAPOSITIVAS.map((d, i) => {
+        const imagenes = (
+          <>
+            {/* Relleno: la misma imagen ampliada y desenfocada tapa las franjas que deja
+                object-contain, en vez de dejar barras planas de otro color. */}
+            <img
+              src={d.imagen}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 size-full scale-110 object-cover blur-2xl"
+              loading={i === 0 ? 'eager' : 'lazy'}
+            />
 
-          <img
-            src={d.imagen}
-            alt={d.alt}
-            // contain, no cover: el texto impreso del banner no se puede recortar.
-            className="relative size-full object-contain"
-            // Solo la primera bloquea el render inicial; las demás pueden esperar.
-            loading={i === 0 ? 'eager' : 'lazy'}
-            fetchPriority={i === 0 ? 'high' : 'low'}
-          />
-        </div>
-      ))}
+            <img
+              src={d.imagen}
+              alt={d.alt}
+              // contain, no cover: el texto impreso del banner no se puede recortar.
+              className="relative size-full object-contain"
+              // Solo la primera bloquea el render inicial; las demás pueden esperar.
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchPriority={i === 0 ? 'high' : 'low'}
+            />
+          </>
+        )
+
+        return (
+          <div
+            key={`${d.imagen}-${i}`}
+            aria-hidden={i !== actual}
+            // `inert` además de ocultar: `pointer-events-none` frena el ratón pero no el tabulador,
+            // y un enlace enfocable dentro de algo marcado como oculto deja al teclado navegando
+            // por diapositivas que nadie está viendo.
+            inert={i !== actual}
+            className={cn(
+              'absolute inset-0 transition-opacity duration-700 ease-in-out',
+              i === actual ? 'opacity-100' : 'pointer-events-none opacity-0',
+            )}
+          >
+            {d.enlace ? (
+              <a
+                href={d.enlace}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block size-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                {imagenes}
+              </a>
+            ) : (
+              imagenes
+            )}
+          </div>
+        )
+      })}
 
       <button
         type="button"

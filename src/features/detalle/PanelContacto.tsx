@@ -1,13 +1,13 @@
-import { Building2, HandCoins, MapPin, MessageCircle, Phone, User } from 'lucide-react'
+import { Building2, HandCoins, MapPin, MessageCircle, Phone, ShieldCheck, User } from 'lucide-react'
 import type { VehiculoDetalle } from '@/api/types'
+import { AvisoCupo } from '@/features/credito/AvisoCupo'
+import { URL_FINANCIACION, URL_SEGURO, URL_SOAT } from '@/features/credito/enlacesAliado'
 import { formatearPrecio } from '@/lib/formato'
 
-/**
- * Portal de servicios digitales de Presente, donde se tramita el crédito. El `redirect_uri` lo
- * fija el propio portal: primero autentica la identidad y luego devuelve al usuario allí.
- */
-const URL_FINANCIACION =
-  'https://gestionidentidad.presente.com.co/?redirect_uri=https://apps.presente.com.co/servicios-digitales-presente/'
+/** El verde sale del token `seguros` de `index.css`, como cualquier otro color del proyecto. */
+const CLASES_SEGURO =
+  'inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg bg-seguros px-2.5 '
+  + 'text-sm font-semibold text-white transition-all hover:bg-seguros-hover'
 
 /** Deja solo dígitos y antepone el indicativo de Colombia si el número viene sin él. */
 function aFormatoWhatsApp(telefono: string): string {
@@ -35,6 +35,10 @@ export function PanelContacto({ vehiculo }: { vehiculo: VehiculoDetalle }) {
             <p className="mt-0.5 text-xs text-muted-foreground">Precio negociable</p>
           )}
         </div>
+
+        {/* Debajo del precio y no al final: el cupo solo significa algo al lado de la cifra con
+            la que se compara. */}
+        <AvisoCupo precioVehiculo={vehiculo.precio} />
 
         <div className="h-px w-full bg-border" />
 
@@ -109,6 +113,23 @@ export function PanelContacto({ vehiculo }: { vehiculo: VehiculoDetalle }) {
           >
             <HandCoins className="size-4" aria-hidden />
             Solicitar Financiación
+          </a>
+
+          {/* Seguros aparte del crédito y con su propio color: son otro trámite y conviene que no
+              se confundan con los botones de contacto ni con el de financiación. */}
+          <a
+            href={URL_SEGURO}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={CLASES_SEGURO}
+          >
+            <ShieldCheck className="size-4" aria-hidden />
+            Cotiza tu Seguro
+          </a>
+
+          <a href={URL_SOAT} target="_blank" rel="noopener noreferrer" className={CLASES_SEGURO}>
+            <ShieldCheck className="size-4" aria-hidden />
+            Compra tu SOAT Online
           </a>
         </div>
       </div>

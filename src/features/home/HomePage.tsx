@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { SearchX } from 'lucide-react'
 import { vehiculos } from '@/api/endpoints'
 import { Alerta } from '@/components/ui/Alerta'
+import { AvisoCupo } from '@/features/credito/AvisoCupo'
 import { Boton } from '@/components/ui/Boton'
 import { useDebounce } from '@/lib/useDebounce'
 import { cn } from '@/lib/utils'
@@ -66,6 +67,10 @@ export function HomePage() {
                 Encuentra el vehículo ideal entre nuestra selección premium.
               </p>
             </div>
+
+            {/* Sin cupo asignado no se pinta nada y el título se queda solo, por eso el
+                contenedor no reserva espacio. */}
+            <AvisoCupo saludar className="max-w-md" />
           </div>
 
           {error && <Alerta>{(error as Error).message}</Alerta>}

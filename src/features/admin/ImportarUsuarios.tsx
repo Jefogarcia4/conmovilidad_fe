@@ -214,31 +214,73 @@ export function ImportarUsuarios({ onCerrar }: { onCerrar: () => void }) {
             <CheckCircle2 className="mx-auto size-9 text-cta" aria-hidden />
 
             <h3 className="mt-3 font-display text-lg font-bold text-foreground">
-              {resultado.usuariosCreados}{' '}
-              {resultado.usuariosCreados === 1 ? 'usuario creado' : 'usuarios creados'}
+              {resumirCarga(resultado.usuariosCreados, resultado.usuariosActualizados)}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Entran con su número de documento y deberán activar la cuenta la primera vez.
+              {resultado.usuariosCreados > 0
+                ? 'Los nuevos entran con su número de documento y deberán activar la cuenta la primera vez.'
+                : 'Las cédulas que ya existían solo cambiaron su cupo y su tasa.'}
             </p>
 
-            <ul className="mx-auto mt-4 max-h-40 max-w-sm overflow-y-auto text-left text-sm text-muted-foreground">
-              {resultado.creados.map((usuario) => (
-                <li key={usuario} className="border-b border-border/60 py-1.5 last:border-0">
-                  {usuario}
-                </li>
-              ))}
-            </ul>
+            {/* Creados y actualizados van en listas separadas: son cosas distintas y mezclarlas
+                dejaría al administrador sin saber a quién se le creó la cuenta. */}
+            <Listado
+              titulo="Creados"
+              detalles={resultado.creados}
+              total={resultado.usuariosCreados}
+            />
 
-            {/* Con miles de altas la lista viene recortada: se dice, para que nadie piense que
-                se crearon solo los que ve. */}
-            {resultado.usuariosCreados > resultado.creados.length && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                y {resultado.usuariosCreados - resultado.creados.length} más
-              </p>
-            )}
+            <Listado
+              titulo="Actualizados"
+              detalles={resultado.actualizados}
+              total={resultado.usuariosActualizados}
+            />
           </section>
         )}
       </div>
     </Modal>
+  )
+}
+
+/** «3 usuarios creados», «5 actualizados» o las dos cosas, según lo que de verdad pasó. */
+function resumirCarga(creados: number, actualizados: number): string {
+  const partes: string[] = []
+
+  if (creados > 0) partes.push(`${creados} ${creados === 1 ? 'usuario creado' : 'usuarios creados'}`)
+  if (actualizados > 0) partes.push(`${actualizados} ${actualizados === 1 ? 'actualizado' : 'actualizados'}`)
+
+  // Un archivo válido cuyas filas no cambiaban nada: ni se creó ni se actualizó nada.
+  return partes.length > 0 ? partes.join(' y ') : 'Sin cambios'
+}
+
+function Listado({
+  titulo,
+  detalles,
+  total,
+}: {
+  titulo: string
+  detalles: string[]
+  total: number
+}) {
+  if (total === 0) return null
+
+  return (
+    <div className="mt-4 text-left">
+      <p className="text-xs font-medium text-foreground">{titulo}</p>
+
+      <ul className="mx-auto mt-1 max-h-32 max-w-sm overflow-y-auto text-sm text-muted-foreground">
+        {detalles.map((linea) => (
+          <li key={linea} className="border-b border-border/60 py-1.5 last:border-0">
+            {linea}
+          </li>
+        ))}
+      </ul>
+
+      {/* Con miles de filas la lista viene recortada: se dice, para que nadie piense que solo
+          se procesó lo que ve. */}
+      {total > detalles.length && (
+        <p className="mt-1 text-xs text-muted-foreground">y {total - detalles.length} más</p>
+      )}
+    </div>
   )
 }

@@ -12,6 +12,13 @@ export function formatearFechaCorta(iso: string): string {
   })
 }
 
+/** `18.5` → `"18,5 %"`. Nulo cuando no hay tasa asignada. */
+export function formatearTasa(valor: number | undefined): string | undefined {
+  if (valor === undefined) return undefined
+
+  return `${valor.toLocaleString('es-CO', { maximumFractionDigits: 2 })}%`
+}
+
 /** `45000` → `"45.000 km"` */
 export function formatearKilometraje(valor: number): string {
   return `${valor.toLocaleString('es-CO')} km`

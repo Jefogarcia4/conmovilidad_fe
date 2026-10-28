@@ -14,6 +14,7 @@ import { ComboBox } from '@/components/ui/ComboBox'
 import { clasesControl } from '@/components/ui/estilosControl'
 import { Modal } from '@/components/ui/Modal'
 import { Paginacion } from '@/components/ui/Paginacion'
+import { formatearPrecio, formatearTasa } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import {
   BotonFila,
@@ -66,6 +67,21 @@ const esquemaBase = {
   rol: z.string().min(1, 'Selecciona el rol.'),
   convenioId: z.string().min(1, 'Selecciona el convenio.'),
   empresaId: z.string().min(1, 'Selecciona la empresa.'),
+
+  // Van como texto y no como número para poder distinguir «vacío» de cero: el input numérico de
+  // react-hook-form entrega `NaN` al borrarlo, y eso no sirve para decir «sin cupo asignado».
+  cupo: z
+    .string()
+    .trim()
+    .max(20)
+    .regex(/^[0-9.]*$/, 'Solo números y puntos de miles.')
+    .optional(),
+  tasa: z
+    .string()
+    .trim()
+    .max(6)
+    .regex(/^[0-9]*[.,]?[0-9]*$/, 'Escribe la tasa, por ejemplo 18,5.')
+    .optional(),
 }
 
 const esquemaCrear = z.object({ ...esquemaBase, passwordInicial: reglasPassword })
@@ -79,6 +95,25 @@ const ESTADOS = [
   { valor: 'inactivos', etiqueta: 'Inactivos' },
   { valor: 'sin_activar', etiqueta: 'Sin activar' },
 ]
+
+/**
+ * Pasa a número lo que se escribió en los campos de cupo y tasa. Vacío devuelve `undefined`, que
+ * es lo que la API entiende como «sin asignar»; los puntos de miles y la coma decimal se traducen
+ * para que «15.000.000» y «18,5» entren como se escriben en Colombia.
+ */
+function aNumero(texto: string | undefined): number | undefined {
+  const limpio = (texto ?? '').trim()
+
+  if (limpio === '') return undefined
+
+  const normalizado = limpio.includes(',')
+    ? limpio.replace(/\./g, '').replace(',', '.')
+    : limpio.replace(/\.(?=\d{3}(\D|$))/g, '')
+
+  const valor = Number(normalizado)
+
+  return Number.isFinite(valor) ? valor : undefined
+}
 
 const FILTROS_VACIOS = { busqueda: '', convenioId: '', rol: '', estado: '' }
 
@@ -173,6 +208,11 @@ export function UsuariosPage() {
           return u.convenioNombre
         case 'vehiculos':
           return u.totalVehiculos
+        // Sin valor va al fondo: `-1` lo deja por debajo de un cupo de cero, que sí es un dato.
+        case 'cupo':
+          return u.cupoCredito ?? -1
+        case 'tasa':
+          return u.tasaInteres ?? -1
         case 'estado':
           return Number(u.activo)
         default:
@@ -306,6 +346,8 @@ export function UsuariosPage() {
               { texto: 'Empresa', clave: 'empresa' },
               { texto: 'Convenio', clave: 'convenio' },
               { texto: 'Vehículos', derecha: true, clave: 'vehiculos' },
+              { texto: 'Cupo', derecha: true, clave: 'cupo' },
+              { texto: 'Tasa', derecha: true, clave: 'tasa' },
               { texto: 'Estado', clave: 'estado' },
               { texto: 'Acciones', derecha: true },
             ]}
@@ -331,6 +373,19 @@ export function UsuariosPage() {
                 <Celda apagada>{u.empresaNombre}</Celda>
                 <Celda apagada>{u.convenioNombre}</Celda>
                 <Celda derecha apagada>{u.totalVehiculos}</Celda>
+
+                {/* Sin cupo asignado no se escribe «0»: un cupo de cero significa otra cosa. */}
+                <Celda derecha>
+                  {u.cupoCredito === undefined ? (
+                    <span className="text-muted-foreground">—</span>
+                  ) : (
+                    <span className="font-medium text-foreground">
+                      {formatearPrecio(u.cupoCredito)}
+                    </span>
+                  )}
+                </Celda>
+
+                <Celda derecha apagada>{formatearTasa(u.tasaInteres) ?? '—'}</Celda>
 
                 <Celda>
                   <div className="flex flex-col items-start gap-1">
@@ -446,6 +501,8 @@ function FormularioUsuario({
       rol: usuario?.rol ?? 'Asesor',
       convenioId: usuario?.convenioId ?? '',
       empresaId: usuario?.empresaId ?? '',
+      cupo: usuario?.cupoCredito?.toString() ?? '',
+      tasa: usuario?.tasaInteres?.toString().replace('.', ',') ?? '',
       passwordInicial: '',
     },
   })
@@ -471,6 +528,8 @@ function FormularioUsuario({
             telefono: datos.telefono || undefined,
             rol: datos.rol as RolUsuario,
             empresaId: datos.empresaId,
+            cupoCredito: aNumero(datos.cupo),
+            tasaInteres: aNumero(datos.tasa),
           })
         : adminUsuarios.crear({
             nombres: datos.nombres,
@@ -481,6 +540,8 @@ function FormularioUsuario({
             rol: datos.rol as RolUsuario,
             empresaId: datos.empresaId,
             passwordInicial: datos.passwordInicial,
+            cupoCredito: aNumero(datos.cupo),
+            tasaInteres: aNumero(datos.tasa),
           }),
     onSuccess: async () => {
       await clienteConsultas.invalidateQueries({ queryKey: ['admin'] })
@@ -581,6 +642,36 @@ function FormularioUsuario({
             {...register('telefono')}
             placeholder="+57 300 123 4567"
             className={cn(clasesControl, 'border-input')}
+          />
+        </CampoFormulario>
+
+        <CampoFormulario
+          etiqueta="Cupo"
+          htmlFor="cupo-usuario"
+          error={errors.cupo?.message}
+          ayuda="Cupo de crédito en pesos. En blanco queda sin asignar."
+        >
+          <input
+            id="cupo-usuario"
+            inputMode="numeric"
+            {...register('cupo')}
+            placeholder="15.000.000"
+            className={cn(clasesControl, errors.cupo ? 'border-destructive' : 'border-input')}
+          />
+        </CampoFormulario>
+
+        <CampoFormulario
+          etiqueta="Tasa"
+          htmlFor="tasa-usuario"
+          error={errors.tasa?.message}
+          ayuda="En porcentaje: 18,5 es 18,5 %."
+        >
+          <input
+            id="tasa-usuario"
+            inputMode="decimal"
+            {...register('tasa')}
+            placeholder="18,5"
+            className={cn(clasesControl, errors.tasa ? 'border-destructive' : 'border-input')}
           />
         </CampoFormulario>
 
