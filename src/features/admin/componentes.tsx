@@ -16,6 +16,12 @@ export function TablaAdmin({ children }: { children: ReactNode }) {
 export interface ColumnaTabla {
   texto: string
   derecha?: boolean
+  /**
+   * Ancla la columna al borde derecho mientras la tabla se desplaza en horizontal. Se usa en la
+   * de acciones: con muchas columnas, el lápiz se queda fuera de la pantalla y no hay forma
+   * evidente de llegar hasta él.
+   */
+  fija?: boolean
   /** Sin clave, la columna no se puede ordenar: no todas tienen un criterio con sentido. */
   clave?: string
 }
@@ -36,7 +42,9 @@ export function EncabezadoTabla({
 }) {
   return (
     <thead>
-      <tr className="border-b border-border bg-secondary/50">
+      {/* Fondo opaco y no translúcido: la celda fija se superpone a las demás al desplazarse, y
+          con transparencia se leería el texto de debajo a través de ella. */}
+      <tr className="border-b border-border bg-secondary">
         {columnas.map((c) => {
           const columna: ColumnaTabla = typeof c === 'string' ? { texto: c } : c
           const clave = columna.clave
@@ -58,6 +66,7 @@ export function EncabezadoTabla({
               className={cn(
                 'h-10 px-3 align-middle font-medium whitespace-nowrap text-foreground',
                 columna.derecha ? 'text-right' : 'text-left',
+                columna.fija && 'sticky right-0 z-20 border-l border-border bg-secondary',
               )}
             >
               {ordenar ? (
@@ -102,7 +111,9 @@ export function FilaTabla({ children, atenuada }: { children: ReactNode; atenuad
   return (
     <tr
       className={cn(
-        'border-b border-border transition-colors last:border-0 hover:bg-muted/50',
+        // `group/fila` y un hover opaco: la celda fija tiene que poder repetir exactamente el
+        // mismo color de la fila, y un tono translúcido compuesto sobre la tarjeta no coincide.
+        'group/fila border-b border-border transition-colors last:border-0 hover:bg-muted',
         // Los inactivos siguen listados pero se distinguen de un vistazo.
         atenuada && 'opacity-55',
       )}
@@ -116,10 +127,13 @@ export function Celda({
   children,
   derecha,
   apagada,
+  fija,
 }: {
   children: ReactNode
   derecha?: boolean
   apagada?: boolean
+  /** Debe coincidir con la columna correspondiente del encabezado. */
+  fija?: boolean
 }) {
   return (
     <td
@@ -127,6 +141,7 @@ export function Celda({
         'px-3 py-2.5 align-middle whitespace-nowrap',
         derecha && 'text-right',
         apagada && 'text-muted-foreground',
+        fija && 'sticky right-0 z-10 border-l border-border bg-card group-hover/fila:bg-muted',
       )}
     >
       {children}

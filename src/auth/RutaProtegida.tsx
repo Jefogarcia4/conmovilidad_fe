@@ -2,10 +2,10 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from './useAuth'
 
 /**
- * Los textos legales se abren desde la propia pantalla de activación: quien tiene que aceptarlos
- * necesita poder leerlos antes, así que no pueden quedar detrás de la activación que exigen.
+ * Los textos legales ya no aparecen aquí: son rutas públicas, fuera de esta protección, porque
+ * también se enlazan desde el login. Lo único accesible sin activar la cuenta es la activación.
  */
-const RUTAS_PERMITIDAS_SIN_ACTIVAR = ['/activar-cuenta', '/terminos', '/habeas-data']
+const RUTAS_PERMITIDAS_SIN_ACTIVAR = ['/activar-cuenta']
 
 /** Deja pasar solo a usuarios autenticados y recuerda a dónde iban para volver tras el login. */
 export function RutaProtegida() {

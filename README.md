@@ -231,7 +231,36 @@ el comportamiento es idéntico en todas las plataformas y las listas largas se v
   fallaba la decimoctava se perdían las diecisiete anteriores. Ahora las que entran se conservan y
   el aviso dice cuáles repetir.
 
-## Aviso de cupo de crédito
+## Tablas del portal
+
+- **La columna de acciones se ancla al borde derecho** (`fija` en `ColumnaTabla` y en `Celda`). Con
+  ocho o nueve columnas el lápiz se salía de la pantalla y no había forma evidente de llegar a él:
+  la tabla sí se desplaza en horizontal, pero su barra queda abajo del todo y en Windows está
+  oculta hasta que se desplaza.
+- **Los fondos de fila y encabezado son opacos, no translúcidos.** La celda anclada se superpone a
+  las demás al desplazarse, y con transparencia se lee el texto de debajo a través de ella. Por lo
+  mismo la fila usa `group/fila` y la celda anclada repite el color del `hover` con
+  `group-hover/fila`: un tono compuesto sobre la tarjeta no coincide con el mismo tono opaco.
+- En «Usuarios», **cupo y tasa comparten una columna**: son el mismo dato de crédito, y separarlos
+  era lo que empujaba las acciones fuera de la pantalla.
+
+## Documentos legales
+
+- **`/terminos` y `/habeas-data` son rutas públicas**, fuera de `RutaProtegida`. Antes estaban
+  detrás de la sesión y el login enlaza a ellas: quien aún no había entrado y pulsaba «Términos y
+  Condiciones» acababa rebotado al propio login, sin poder leer lo que se le pedía aceptar. Traen
+  su propio encabezado, así que no pasan por `LayoutApp`.
+- **El texto es transcripción, no resúmen.** Es lo que el usuario acepta, así que lo que muestra
+  la aplicación y lo que dice el documento firmado tienen que ser lo mismo. Al llegar una versión
+  nueva se actualizan el contenido y las constantes `VERSION` y `ACTUALIZACION` de cada página.
+- **Del habeas data se omite solo el recuadro de firma, huella y cédula**, que no aplica en web, y
+  en su lugar se explica que la autorización se otorga marcando la casilla. Lo que se autoriza no
+  se toca.
+- Los enlaces legales **abren en otra pestaña** y detienen la propagación del clic: viven dentro
+  del `<label>` de la casilla de aceptación, y leer los términos no puede acabar marcándolos ni
+  perdiendo lo que ya se escribió en el formulario.
+
+## Aviso de crédito y cupo
 
 - **El mismo componente sirve en el catálogo y en el detalle** (`features/credito/AvisoCupo`). En
   el catálogo saluda por el nombre; en el detalle recibe el precio del vehículo y compara.

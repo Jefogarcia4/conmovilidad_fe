@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { ApiError } from '@/api/cliente'
 import { useAuth } from '@/auth/useAuth'
@@ -24,6 +24,27 @@ const esquema = z.object({
 })
 
 type Formulario = z.infer<typeof esquema>
+
+/**
+ * Enlace a un documento legal desde la casilla de aceptación.
+ *
+ * Abre en otra pestaña para no perder lo que el usuario ya escribió, y detiene la propagación
+ * porque el enlace vive dentro del `<label>` de la casilla: leer los términos no puede acabar
+ * marcándolos o desmarcándolos.
+ */
+function EnlaceLegal({ a, children }: { a: string; children: ReactNode }) {
+  return (
+    <Link
+      to={a}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      className="font-medium text-cta underline-offset-2 hover:underline"
+    >
+      {children}
+    </Link>
+  )
+}
 
 export function LoginPage() {
   const { iniciarSesion } = useAuth()
@@ -124,19 +145,8 @@ export function LoginPage() {
                   className="text-sm leading-snug font-normal text-muted-foreground select-none"
                 >
                   Acepto{' '}
-                  <a
-                    href="/terminos"
-                    className="font-medium text-cta underline-offset-2 hover:underline"
-                  >
-                    Términos y Condiciones
-                  </a>{' '}
-                  y{' '}
-                  <a
-                    href="/habeas-data"
-                    className="font-medium text-cta underline-offset-2 hover:underline"
-                  >
-                    Habeas Data
-                  </a>
+                  <EnlaceLegal a="/terminos">Términos y Condiciones</EnlaceLegal> y{' '}
+                  <EnlaceLegal a="/habeas-data">Habeas Data</EnlaceLegal>
                 </label>
               </div>
 

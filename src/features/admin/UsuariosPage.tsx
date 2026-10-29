@@ -346,10 +346,11 @@ export function UsuariosPage() {
               { texto: 'Empresa', clave: 'empresa' },
               { texto: 'Convenio', clave: 'convenio' },
               { texto: 'Vehículos', derecha: true, clave: 'vehiculos' },
-              { texto: 'Cupo', derecha: true, clave: 'cupo' },
-              { texto: 'Tasa', derecha: true, clave: 'tasa' },
+              // Cupo y tasa en una sola columna: son el mismo dato de crédito y separarlas
+              // empujaba la de acciones fuera de la pantalla.
+              { texto: 'Cupo y tasa', derecha: true, clave: 'cupo' },
               { texto: 'Estado', clave: 'estado' },
-              { texto: 'Acciones', derecha: true },
+              { texto: 'Acciones', derecha: true, fija: true },
             ]}
           />
 
@@ -379,13 +380,16 @@ export function UsuariosPage() {
                   {u.cupoCredito === undefined ? (
                     <span className="text-muted-foreground">—</span>
                   ) : (
-                    <span className="font-medium text-foreground">
-                      {formatearPrecio(u.cupoCredito)}
-                    </span>
+                    <>
+                      <span className="font-medium text-foreground">
+                        {formatearPrecio(u.cupoCredito)}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {formatearTasa(u.tasaInteres) ?? 'sin tasa'}
+                      </span>
+                    </>
                   )}
                 </Celda>
-
-                <Celda derecha apagada>{formatearTasa(u.tasaInteres) ?? '—'}</Celda>
 
                 <Celda>
                   <div className="flex flex-col items-start gap-1">
@@ -396,7 +400,7 @@ export function UsuariosPage() {
                   </div>
                 </Celda>
 
-                <Celda derecha>
+                <Celda derecha fija>
                   <div className="flex items-center justify-end gap-1">
                     <BotonFila etiqueta={`Editar ${u.nombres}`} onClick={() => setEditando(u)}>
                       <Pencil className="size-4" aria-hidden />

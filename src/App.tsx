@@ -42,6 +42,12 @@ const PqrsPage = lazy(() =>
 const ContactoPage = lazy(() =>
   import('./features/pqrs/ContactoPage').then((m) => ({ default: m.ContactoPage })),
 )
+const TerminosPage = lazy(() =>
+  import('./features/legal/TerminosPage').then((m) => ({ default: m.TerminosPage })),
+)
+const HabeasDataPage = lazy(() =>
+  import('./features/legal/HabeasDataPage').then((m) => ({ default: m.HabeasDataPage })),
+)
 const PublicarPage = lazy(() =>
   import('./features/publicar/PublicarPage').then((m) => ({ default: m.PublicarPage })),
 )
@@ -73,6 +79,12 @@ export default function App() {
               <Route path="/login" element={<LoginPage />} />
             </Route>
 
+            {/* Públicos a propósito: se enlazan desde la casilla de aceptación del login y desde
+                la de activación. Exigir sesión para leer lo que se pide aceptar dejaba al usuario
+                rebotado al propio login. Traen su propio encabezado, así que no usan LayoutApp. */}
+            <Route path="/terminos" element={<TerminosPage />} />
+            <Route path="/habeas-data" element={<HabeasDataPage />} />
+
             <Route element={<RutaProtegida />}>
               {/* Fuera del layout: hasta activar la cuenta no hay navegación disponible. */}
               <Route path="/activar-cuenta" element={<ActivarCuentaPage />} />
@@ -103,8 +115,6 @@ export default function App() {
                 <Route path="/sobre-nosotros" element={<PendientePage titulo="Sobre Nosotros" />} />
                 <Route path="/equipo" element={<PendientePage titulo="Nuestro Equipo" />} />
                 <Route path="/asesoria" element={<PendientePage titulo="Solicitar asesoría" />} />
-                <Route path="/habeas-data" element={<PendientePage titulo="Habeas Data" />} />
-                <Route path="/terminos" element={<PendientePage titulo="Términos y Condiciones" />} />
                 <Route path="/contacto" element={<ContactoPage />} />
               </Route>
             </Route>
