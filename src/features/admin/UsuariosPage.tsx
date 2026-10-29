@@ -14,7 +14,7 @@ import { ComboBox } from '@/components/ui/ComboBox'
 import { clasesControl } from '@/components/ui/estilosControl'
 import { Modal } from '@/components/ui/Modal'
 import { Paginacion } from '@/components/ui/Paginacion'
-import { formatearPrecio, formatearTasa } from '@/lib/formato'
+import { formatearNombre, formatearPrecio, formatearTasa } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import {
   BotonFila,
@@ -359,7 +359,7 @@ export function UsuariosPage() {
               <FilaTabla key={u.id} atenuada={!u.activo}>
                 <Celda>
                   <p className="font-medium text-foreground">
-                    {u.nombres} {u.apellidos}
+                    {formatearNombre(`${u.nombres} ${u.apellidos}`)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {u.numeroDocumento}
@@ -402,19 +402,22 @@ export function UsuariosPage() {
 
                 <Celda derecha fija>
                   <div className="flex items-center justify-end gap-1">
-                    <BotonFila etiqueta={`Editar ${u.nombres}`} onClick={() => setEditando(u)}>
+                    <BotonFila
+                      etiqueta={`Editar ${formatearNombre(u.nombres)}`}
+                      onClick={() => setEditando(u)}
+                    >
                       <Pencil className="size-4" aria-hidden />
                     </BotonFila>
 
                     <BotonFila
-                      etiqueta={`Restablecer contraseña de ${u.nombres}`}
+                      etiqueta={`Restablecer contraseña de ${formatearNombre(u.nombres)}`}
                       onClick={() => setRestableciendo(u)}
                     >
                       <KeyRound className="size-4" aria-hidden />
                     </BotonFila>
 
                     <BotonFila
-                      etiqueta={`${u.activo ? 'Desactivar' : 'Activar'} ${u.nombres}`}
+                      etiqueta={`${u.activo ? 'Desactivar' : 'Activar'} ${formatearNombre(u.nombres)}`}
                       destructivo={u.activo}
                       disabled={estado.isPending}
                       onClick={() => estado.mutate({ id: u.id, activo: !u.activo })}
