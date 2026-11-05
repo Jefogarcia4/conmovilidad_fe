@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Pencil, Plus, Power, PowerOff } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
@@ -11,9 +11,11 @@ import { CampoFormulario } from '@/components/ui/CampoFormulario'
 import { ComboBox } from '@/components/ui/ComboBox'
 import { clasesControl } from '@/components/ui/estilosControl'
 import { Modal } from '@/components/ui/Modal'
+import { comparable, soloDigitos } from '@/lib/texto'
 import { cn } from '@/lib/utils'
 import {
   BotonFila,
+  CampoFiltro,
   Celda,
   EncabezadoTabla,
   EstadoVacio,
@@ -41,6 +43,8 @@ type Formulario = z.infer<typeof esquema>
 export function EmpresasPage() {
   const clienteConsultas = useQueryClient()
   const [convenioFiltro, setConvenioFiltro] = useState('')
+  const [nombreFiltro, setNombreFiltro] = useState('')
+  const [nitFiltro, setNitFiltro] = useState('')
   const [editando, setEditando] = useState<EmpresaAdmin | null>(null)
   const [creando, setCreando] = useState(false)
 
@@ -63,23 +67,60 @@ export function EmpresasPage() {
   const opcionesConvenio = (convenios ?? []).map((c) => ({ valor: c.id, etiqueta: c.nombre }))
   const sinConvenios = convenios !== undefined && convenios.length === 0
 
+  /**
+   * El convenio lo filtra la API; el nombre y el NIT, aquí. El listado llega completo y son unos
+   * cientos de filas: filtrar en el navegador responde al instante y no hay que tocar el endpoint.
+   *
+   * El nombre se compara sin acentos —«exito» encuentra «GRUPO ÉXITO»— y el NIT solo por sus
+   * dígitos, porque unos lo escriben con puntos y otros sin ellos.
+   */
+  const visibles = useMemo(() => {
+    const nombre = comparable(nombreFiltro.trim())
+    const nit = soloDigitos(nitFiltro)
+
+    return (data ?? []).filter(
+      (e) =>
+        (!nombre || comparable(e.nombre).includes(nombre)) &&
+        (!nit || soloDigitos(e.nit).includes(nit)),
+    )
+  }, [data, nombreFiltro, nitFiltro])
+
+  const hayFiltrosDeTexto = Boolean(nombreFiltro.trim() || nitFiltro.trim())
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="w-full max-w-xs">
-          <label
-            htmlFor="filtro-convenio"
-            className="mb-1.5 block text-xs font-medium text-muted-foreground"
-          >
-            Filtrar por convenio
-          </label>
-          <ComboBox
-            id="filtro-convenio"
-            valor={convenioFiltro}
-            onCambio={setConvenioFiltro}
-            textoVacio="Todos los convenios"
-            opciones={opcionesConvenio}
-          />
+        <div className="grid w-full flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <CampoFiltro etiqueta="Convenio" htmlFor="filtro-convenio">
+            <ComboBox
+              id="filtro-convenio"
+              valor={convenioFiltro}
+              onCambio={setConvenioFiltro}
+              textoVacio="Todos los convenios"
+              opciones={opcionesConvenio}
+            />
+          </CampoFiltro>
+
+          <CampoFiltro etiqueta="Nombre" htmlFor="filtro-nombre">
+            <input
+              id="filtro-nombre"
+              value={nombreFiltro}
+              onChange={(ev) => setNombreFiltro(ev.target.value)}
+              placeholder="Buscar por nombre"
+              className={cn(clasesControl, 'border-input')}
+            />
+          </CampoFiltro>
+
+          <CampoFiltro etiqueta="NIT" htmlFor="filtro-nit">
+            <input
+              id="filtro-nit"
+              value={nitFiltro}
+              onChange={(ev) => setNitFiltro(ev.target.value)}
+              inputMode="numeric"
+              placeholder="Buscar por NIT"
+              className={cn(clasesControl, 'border-input')}
+            />
+          </CampoFiltro>
         </div>
 
         <Boton onClick={() => setCreando(true)} disabled={sinConvenios}>
@@ -87,6 +128,16 @@ export function EmpresasPage() {
           Nueva empresa
         </Boton>
       </div>
+
+      {/* Cuántas se están viendo: con filtros puestos, una tabla corta puede confundirse con
+          que hay pocas empresas. */}
+      {!isPending && data && (
+        <p className="text-xs text-muted-foreground">
+          {visibles.length === data.length
+            ? `${data.length} empresa${data.length === 1 ? '' : 's'}`
+            : `${visibles.length} de ${data.length} empresas`}
+        </p>
+      )}
 
       {sinConvenios && (
         <Alerta>Crea primero un convenio: toda empresa debe pertenecer a uno.</Alerta>
@@ -99,7 +150,7 @@ export function EmpresasPage() {
         <div className="flex justify-center py-20 text-muted-foreground">
           <Loader2 className="size-6 animate-spin" aria-label="Cargando" />
         </div>
-      ) : data && data.length > 0 ? (
+      ) : visibles.length > 0 ? (
         <TablaAdmin>
           <EncabezadoTabla
             columnas={[
@@ -115,7 +166,7 @@ export function EmpresasPage() {
           />
 
           <tbody>
-            {data.map((e) => (
+            {visibles.map((e) => (
               <FilaTabla key={e.id} atenuada={!e.activo}>
                 <Celda>
                   <p className="font-medium text-foreground">{e.nombre}</p>
@@ -157,7 +208,15 @@ export function EmpresasPage() {
           </tbody>
         </TablaAdmin>
       ) : (
-        !error && <EstadoVacio mensaje="No hay empresas para el filtro seleccionado." />
+        !error && (
+          <EstadoVacio
+            mensaje={
+              hayFiltrosDeTexto
+                ? 'Ninguna empresa coincide con la búsqueda.'
+                : 'No hay empresas para el filtro seleccionado.'
+            }
+          />
+        )
       )}
 
       {(creando || editando) && (

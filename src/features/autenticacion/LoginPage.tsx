@@ -160,11 +160,11 @@ export function LoginPage() {
             </Boton>
           </form>
 
+          {/* Sin enlace a propósito: las cuentas no se solicitan por la plataforma, las crea el
+              gestor del convenio. El «Solicita una» anterior apuntaba a una ruta inexistente. */}
           <p className="text-center text-sm text-muted-foreground">
             ¿No tienes una cuenta?{' '}
-            <a href="/solicitar-cuenta" className="font-medium text-cta hover:underline">
-              ¡Solicita una!
-            </a>
+            <span className="font-medium text-foreground">¡Solicita una con tu gestor!</span>
           </p>
         </div>
       </section>

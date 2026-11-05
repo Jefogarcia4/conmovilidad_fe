@@ -197,6 +197,26 @@ export function BotonFila({ etiqueta, onClick, children, destructivo, disabled }
   )
 }
 
+/** Etiqueta sobre un control de la barra de filtros. */
+export function CampoFiltro({
+  etiqueta,
+  htmlFor,
+  children,
+}: {
+  etiqueta: string
+  htmlFor: string
+  children: ReactNode
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={htmlFor} className="block text-xs font-medium text-muted-foreground">
+        {etiqueta}
+      </label>
+      {children}
+    </div>
+  )
+}
+
 export function EstadoVacio({ mensaje }: { mensaje: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center text-sm text-muted-foreground">

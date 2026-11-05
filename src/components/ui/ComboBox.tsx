@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { ChevronDown, Plus, X } from 'lucide-react'
 import { clasesControl } from './estilosControl'
+import { comparable } from '@/lib/texto'
 import { cn } from '@/lib/utils'
 
 export interface OpcionCombo {
@@ -13,13 +14,6 @@ export interface OpcionCombo {
  * entera al abrir el desplegable se nota; teclear dos letras la deja en un puñado.
  */
 const MAXIMO_VISIBLES = 100
-
-/**
- * Compara sin acentos ni mayúsculas: en «Armenia, Quindío» se busca tecleando «quindio», y
- * nadie escribe las tildes al filtrar.
- */
-const comparable = (texto: string) =>
-  texto.normalize('NFD').replace(/\p{Mn}/gu, '').toLowerCase()
 
 interface Props {
   opciones: OpcionCombo[]
