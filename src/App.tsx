@@ -9,6 +9,8 @@ import { RutaProtegida, RutaPublica } from './auth/RutaProtegida'
 import { LayoutApp } from './components/layout/LayoutApp'
 import { ActivarCuentaPage } from './features/autenticacion/ActivarCuentaPage'
 import { LoginPage } from './features/autenticacion/LoginPage'
+import { RecuperarPasswordPage } from './features/autenticacion/RecuperarPasswordPage'
+import { RestablecerPasswordPage } from './features/autenticacion/RestablecerPasswordPage'
 import { DetalleVehiculoPage } from './features/detalle/DetalleVehiculoPage'
 import { HomePage } from './features/home/HomePage'
 import { PagoResultadoPage } from './features/pagos/PagoResultadoPage'
@@ -77,6 +79,8 @@ export default function App() {
             <Routes>
             <Route element={<RutaPublica />}>
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
+              <Route path="/restablecer-password" element={<RestablecerPasswordPage />} />
             </Route>
 
             {/* Públicos a propósito: se enlazan desde la casilla de aceptación del login y desde

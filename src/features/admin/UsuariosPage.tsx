@@ -64,6 +64,8 @@ const esquemaBase = {
     .max(30)
     .regex(/^[A-Za-z0-9.-]+$/, 'Solo letras, números, puntos y guiones.'),
   telefono: z.string().trim().max(30).optional(),
+  // Opcional: sin correo el usuario se crea igual y las credenciales se entregan por otro medio.
+  email: z.union([z.literal(''), z.email('El correo no tiene un formato válido.').max(200)]),
   rol: z.string().min(1, 'Selecciona el rol.'),
   convenioId: z.string().min(1, 'Selecciona el convenio.'),
   empresaId: z.string().min(1, 'Selecciona la empresa.'),
@@ -86,7 +88,10 @@ const esquemaBase = {
 
 const esquemaCrear = z.object({ ...esquemaBase, passwordInicial: reglasPassword })
 
-const esquemaEditar = z.object(esquemaBase)
+const { email: _email, ...esquemaBaseSinCorreo } = esquemaBase
+
+/** Al editar no se toca el correo: ver el formulario. */
+const esquemaEditar = z.object(esquemaBaseSinCorreo)
 
 type FormularioCrear = z.infer<typeof esquemaCrear>
 
@@ -505,6 +510,7 @@ function FormularioUsuario({
       tipoDocumento: usuario?.tipoDocumento ?? 'CedulaCiudadania',
       numeroDocumento: usuario?.numeroDocumento ?? '',
       telefono: usuario?.telefono ?? '',
+      email: usuario?.email ?? '',
       rol: usuario?.rol ?? 'Asesor',
       convenioId: usuario?.convenioId ?? '',
       empresaId: usuario?.empresaId ?? '',
@@ -549,6 +555,7 @@ function FormularioUsuario({
             passwordInicial: datos.passwordInicial,
             cupoCredito: aNumero(datos.cupo),
             tasaInteres: aNumero(datos.tasa),
+            email: datos.email || undefined,
           }),
     onSuccess: async () => {
       await clienteConsultas.invalidateQueries({ queryKey: ['admin'] })
@@ -744,6 +751,29 @@ function FormularioUsuario({
             )}
           />
         </CampoFormulario>
+
+        {/* Solo al crear: el correo de aquí es la dirección a la que salen las credenciales. Al
+            editar no se muestra porque el usuario ya registró el suyo al activar la cuenta, y
+            pisarlo desde el portal le dejaría la recuperación apuntando a otro buzón. */}
+        {!esEdicion && (
+          <div className="sm:col-span-2">
+            <CampoFormulario
+              etiqueta="Correo para enviarle las credenciales"
+              htmlFor="email-usuario"
+              error={errors.email?.message}
+              ayuda="Opcional. Si lo dejas en blanco, tendrás que entregarle la clave por otro medio."
+            >
+              <input
+                id="email-usuario"
+                type="email"
+                autoComplete="off"
+                placeholder="nombre@empresa.com"
+                {...register('email')}
+                className={cn(clasesControl, errors.email ? 'border-destructive' : 'border-input')}
+              />
+            </CampoFormulario>
+          </div>
+        )}
 
         {!esEdicion && (
           <div className="sm:col-span-2">

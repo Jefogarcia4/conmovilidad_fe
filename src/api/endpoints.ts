@@ -41,6 +41,20 @@ export const autenticacion = {
 
   perfil: () => api.get<UsuarioAutenticado>('/auth/me'),
 
+  /**
+   * Pide el enlace de recuperación. Responde bien exista o no la cuenta: la API no distingue los
+   * dos casos a propósito, y la pantalla tampoco debe hacerlo.
+   */
+  recuperarPassword: (numeroDocumento: string) =>
+    api.post<void>('/auth/recuperar-password', { numeroDocumento }, { sinAutenticacion: true }),
+
+  restablecerPassword: (token: string, passwordNuevo: string) =>
+    api.post<void>(
+      '/auth/restablecer-password',
+      { token, passwordNuevo },
+      { sinAutenticacion: true },
+    ),
+
   cambiarPassword: (passwordActual: string, passwordNuevo: string) =>
     api.post<void>('/auth/cambiar-password', { passwordActual, passwordNuevo }),
 }

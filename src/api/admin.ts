@@ -81,6 +81,8 @@ export interface CrearUsuarioRequest {
   passwordInicial: string
   cupoCredito?: number
   tasaInteres?: number
+  /** Si viene, la API le envía ahí las credenciales de ingreso. */
+  email?: string
 }
 
 export interface ActualizarUsuarioRequest {

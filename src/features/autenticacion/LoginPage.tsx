@@ -123,12 +123,12 @@ export function LoginPage() {
               />
 
               <div className="flex justify-end">
-                <a
-                  href="/recuperar-password"
+                <Link
+                  to="/recuperar-password"
                   className="text-sm font-medium text-foreground hover:underline"
                 >
                   ¿Olvidaste tu contraseña?
-                </a>
+                </Link>
               </div>
             </div>
 
