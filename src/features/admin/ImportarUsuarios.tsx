@@ -104,6 +104,16 @@ export function ImportarUsuarios({ onCerrar }: { onCerrar: () => void }) {
                 CSV
               </Boton>
             </div>
+
+            {/* Sin esto, una descarga que falla deja el botón girando y nada más: el usuario no
+                tiene forma de saber si el archivo salió o si el servidor respondió con un error. */}
+            {descargar.error && (
+              <div className="mt-3">
+                <Alerta>
+                  No pudimos generar la plantilla. {(descargar.error as Error).message}
+                </Alerta>
+              </div>
+            )}
           </section>
         )}
 
