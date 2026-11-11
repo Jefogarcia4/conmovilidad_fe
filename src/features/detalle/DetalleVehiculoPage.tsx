@@ -34,26 +34,14 @@ export function DetalleVehiculoPage() {
   }
 
   if (error) {
-    const apiError = error instanceof ApiError ? error : null
+    const noEncontrado = error instanceof ApiError && error.status === 404
 
-    // La API distingue el aviso vencido del resto de los 404 con un código propio, y merece su
-    // propio mensaje: «no existe» y «se le acabó la vigencia» no son lo mismo para quien llega
-    // con el enlace guardado.
-    const vencida = apiError?.codigo === 'vehiculo.publicacion_vencida'
-    const noEncontrado = apiError?.status === 404
-
-    const { titulo: tituloError, detalle } = vencida
+    const { titulo: tituloError, detalle } = noEncontrado
       ? {
-          titulo: 'Esta publicación ya no está disponible',
-          detalle:
-            'El aviso cumplió su tiempo en el catálogo. Si el vehículo sigue en venta, el vendedor puede volver a publicarlo.',
+          titulo: 'Este vehículo no está disponible',
+          detalle: 'Puede que se haya retirado del catálogo o que pertenezca a otro convenio.',
         }
-      : noEncontrado
-        ? {
-            titulo: 'Este vehículo no está disponible',
-            detalle: 'Puede que se haya retirado del catálogo o que pertenezca a otro convenio.',
-          }
-        : { titulo: 'No pudimos cargar el vehículo', detalle: (error as Error).message }
+      : { titulo: 'No pudimos cargar el vehículo', detalle: (error as Error).message }
 
     return (
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">

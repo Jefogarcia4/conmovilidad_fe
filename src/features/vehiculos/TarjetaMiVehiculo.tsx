@@ -1,11 +1,11 @@
 import {
+  BadgeCheck,
   CalendarClock,
   CreditCard,
   Eye,
   ImageOff,
   Loader2,
   Pencil,
-  RefreshCw,
   ShieldCheck,
   Trash2,
 } from 'lucide-react'
@@ -15,7 +15,7 @@ import { ImagenCompleta } from '@/components/ui/ImagenCompleta'
 import { formatearKilometraje, formatearPrecio } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import { presentarEstado } from './estadoVehiculo'
-import { textoVigencia, vigenciaDe } from './vigenciaPublicacion'
+import { seguimientoDe, textoAntiguedad } from './seguimientoPublicacion'
 
 interface Props {
   vehiculo: VehiculoLista
@@ -23,8 +23,8 @@ interface Props {
   eliminando?: boolean
   onPagar: () => void
   pagando?: boolean
-  onRenovar: () => void
-  renovando?: boolean
+  onConfirmar: () => void
+  confirmando?: boolean
 }
 
 /**
@@ -37,17 +37,13 @@ export function TarjetaMiVehiculo({
   eliminando = false,
   onPagar,
   pagando = false,
-  onRenovar,
-  renovando = false,
+  onConfirmar,
+  confirmando = false,
 }: Props) {
   const navegar = useNavigate()
   const estado = presentarEstado(vehiculo.estado)
   const pendienteDePago = vehiculo.estado === 'PendientePago'
-  const vigencia = vigenciaDe(vehiculo)
-
-  // Se ofrece renovar cuando ya venció y también en los últimos días: renovar antes no pierde
-  // tiempo, porque el nuevo período se cuenta desde el momento en que se renueva.
-  const ofrecerRenovar = vigencia !== null && (vigencia.vencida || vigencia.porVencer)
+  const seguimiento = seguimientoDe(vehiculo)
 
   const meta = [
     String(vehiculo.modelo),
@@ -99,30 +95,20 @@ export function TarjetaMiVehiculo({
           {formatearPrecio(vehiculo.precio)}
         </p>
 
-        {vigencia && (
-          <p
-            className={cn(
-              'inline-flex items-center gap-1.5 text-xs',
-              vigencia.vencida
-                ? 'font-medium text-destructive'
-                : vigencia.porVencer
-                  ? 'font-medium text-foreground'
-                  : 'text-muted-foreground',
-            )}
-          >
+        {seguimiento && (
+          <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
             <CalendarClock className="size-3.5 shrink-0" aria-hidden />
-            {textoVigencia(vigencia)}
-            {vigencia.vencida && (
-              <span className="font-normal text-muted-foreground">· fuera del catálogo</span>
-            )}
+            {textoAntiguedad(seguimiento)}
           </p>
         )}
 
-        {ofrecerRenovar && (
+        {/* La publicación no vence: esto no la revive, solo confirma que el vehículo sigue en
+            venta para que el seguimiento no vuelva a preguntar hasta el próximo período. */}
+        {seguimiento?.porRevisar && (
           <button
             type="button"
-            onClick={onRenovar}
-            disabled={renovando}
+            onClick={onConfirmar}
+            disabled={confirmando}
             className={cn(
               'inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg',
               'border border-border bg-background px-3 text-sm font-medium text-foreground',
@@ -131,12 +117,12 @@ export function TarjetaMiVehiculo({
               'disabled:pointer-events-none disabled:opacity-50',
             )}
           >
-            {renovando ? (
+            {confirmando ? (
               <Loader2 className="size-3.5 animate-spin" aria-hidden />
             ) : (
-              <RefreshCw className="size-3.5" aria-hidden />
+              <BadgeCheck className="size-3.5" aria-hidden />
             )}
-            Renovar publicación
+            Sigue disponible
           </button>
         )}
 

@@ -1,10 +1,13 @@
 import { api, queryString } from './cliente'
 
 /**
- * Vigencia de las publicaciones, vista de todos los convenios. Solo superadministrador.
+ * Seguimiento del catálogo, visto de todos los convenios. Solo superadministrador.
+ *
+ * La pregunta que responde no es «qué se va a caer» —las publicaciones no vencen, nada se cae—
+ * sino «a qué hay que ayudarle a venderse».
  */
 
-export interface PublicacionPorVencer {
+export interface PublicacionEnSeguimiento {
   id: string
   placa: string
   vehiculo: string
@@ -13,23 +16,27 @@ export interface PublicacionPorVencer {
   convenioNombre: string
   empresaNombre: string
   publicadoPor: string
-  /** Si está inactivo, nadie va a renovar este aviso: se cae solo al vencerse. */
+  /** Si está inactivo no recibe el correo de seguimiento, pero su publicación sigue en pie. */
   vendedorActivo: boolean
   fechaPublicacion?: string
-  fechaVencimientoPublicacion: string
-  /** Negativo si ya venció. */
-  diasRestantes: number
-  avisoEnviado: boolean
+  /** Días que lleva el aviso en el catálogo. Es la señal que importa. */
+  diasPublicado: number
+  fechaRevisionPublicacion?: string
+  /** Negativo si el seguimiento ya está cumplido y el correo aún no ha salido. */
+  diasParaRevision: number
+  avisoRevisionEnviadoEn?: string
 }
 
-export interface ResumenVigencia {
-  vencidas: number
-  porVencer: number
-  publicaciones: PublicacionPorVencer[]
+export interface ResumenSeguimiento {
+  total: number
+  sinVenderUnMes: number
+  sinVenderTresMeses: number
+  vendedorInactivo: number
+  publicaciones: PublicacionEnSeguimiento[]
 }
 
 export const adminPublicaciones = {
-  /** Sin `dias`, el horizonte es la misma antelación con la que la API manda el correo. */
-  vigencia: (dias?: number) =>
-    api.get<ResumenVigencia>(`/admin/publicaciones/vigencia${queryString({ dias })}`),
+  /** `dias` filtra a las que lleven al menos ese tiempo publicadas. */
+  seguimiento: (dias?: number) =>
+    api.get<ResumenSeguimiento>(`/admin/publicaciones/seguimiento${queryString({ dias })}`),
 }

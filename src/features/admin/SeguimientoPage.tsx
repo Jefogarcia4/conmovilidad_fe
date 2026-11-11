@@ -1,34 +1,27 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { AlertTriangle, CalendarClock, Loader2, MailCheck, UserX } from 'lucide-react'
+import { CalendarClock, Loader2, MailCheck, UserX } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { adminPublicaciones, type PublicacionPorVencer } from '@/api/publicaciones'
+import { adminPublicaciones, type PublicacionEnSeguimiento } from '@/api/publicaciones'
 import { Alerta } from '@/components/ui/Alerta'
 import { clasesControl } from '@/components/ui/estilosControl'
 import { formatearFechaCorta, formatearPrecio } from '@/lib/formato'
 import { cn } from '@/lib/utils'
-import {
-  Celda,
-  EncabezadoTabla,
-  EstadoVacio,
-  FilaTabla,
-  TablaAdmin,
-} from './componentes'
+import { Celda, EncabezadoTabla, EstadoVacio, FilaTabla, TablaAdmin } from './componentes'
 
-/** Horizontes que se ofrecen. El vacío deja que la API use la antelación del aviso. */
-const HORIZONTES = [
-  { valor: '', texto: 'Los que están recibiendo aviso' },
-  { valor: '15', texto: 'Próximos 15 días' },
-  { valor: '30', texto: 'Próximos 30 días' },
-  { valor: '60', texto: 'Próximos 60 días' },
+const FILTROS = [
+  { valor: '30', texto: 'Más de un mes publicado' },
+  { valor: '90', texto: 'Más de tres meses' },
+  { valor: '180', texto: 'Más de seis meses' },
+  { valor: '', texto: 'Todas las publicaciones' },
 ]
 
-export function VigenciaPage() {
-  const [horizonte, setHorizonte] = useState('')
+export function SeguimientoPage() {
+  const [dias, setDias] = useState('30')
 
   const { data, isPending, error } = useQuery({
-    queryKey: ['admin', 'vigencia', horizonte],
-    queryFn: () => adminPublicaciones.vigencia(horizonte ? Number(horizonte) : undefined),
+    queryKey: ['admin', 'seguimiento', dias],
+    queryFn: () => adminPublicaciones.seguimiento(dias ? Number(dias) : undefined),
   })
 
   return (
@@ -38,23 +31,24 @@ export function VigenciaPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="font-display text-lg font-semibold text-foreground">
-            Vigencia de publicaciones
+            Seguimiento del catálogo
           </h2>
           <p className="max-w-2xl text-sm text-muted-foreground">
-            Avisos que están a punto de caerse del catálogo y los que ya cayeron, de todos los
-            convenios. Renovar es gratis y lo hace el vendedor desde «Mis vehículos».
+            Lo que lleva más tiempo sin venderse, de todos los convenios y empezando por lo más
+            antiguo. Las publicaciones no se vencen: esto no es una lista de lo que se va a caer,
+            sino de a qué conviene ayudarle —revisar precio, fotos o descripción—.
           </p>
         </div>
 
         <select
-          aria-label="Horizonte"
-          value={horizonte}
-          onChange={(e) => setHorizonte(e.target.value)}
+          aria-label="Antigüedad"
+          value={dias}
+          onChange={(e) => setDias(e.target.value)}
           className={cn(clasesControl, 'w-auto border-input')}
         >
-          {HORIZONTES.map((h) => (
-            <option key={h.valor} value={h.valor}>
-              {h.texto}
+          {FILTROS.map((f) => (
+            <option key={f.valor} value={f.valor}>
+              {f.texto}
             </option>
           ))}
         </select>
@@ -66,17 +60,23 @@ export function VigenciaPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <Resumen
-              titulo="Ya vencidas"
-              cantidad={data?.vencidas ?? 0}
-              detalle="Fuera del catálogo. Vencieron en los últimos 30 días."
+              titulo="En esta lista"
+              cantidad={data?.total ?? 0}
+              detalle="Publicaciones visibles en el catálogo."
+            />
+            <Resumen
+              titulo="Más de tres meses"
+              cantidad={data?.sinVenderTresMeses ?? 0}
+              detalle="Candidatas a revisar precio y fotos."
               alerta
             />
             <Resumen
-              titulo="Por vencerse"
-              cantidad={data?.porVencer ?? 0}
-              detalle="Todavía visibles en el catálogo."
+              titulo="Vendedor inactivo"
+              cantidad={data?.vendedorInactivo ?? 0}
+              detalle="Siguen publicadas, pero nadie recibe el seguimiento."
+              alerta
             />
           </div>
 
@@ -87,7 +87,7 @@ export function VigenciaPage() {
                   'Vehículo',
                   'Convenio / Empresa',
                   'Vendedor',
-                  'Vence',
+                  'Publicado',
                   { texto: 'Precio', derecha: true },
                 ]}
               />
@@ -99,7 +99,7 @@ export function VigenciaPage() {
               </tbody>
             </TablaAdmin>
           ) : (
-            <EstadoVacio mensaje="No hay publicaciones por vencerse en este horizonte." />
+            <EstadoVacio mensaje="No hay publicaciones con esa antigüedad." />
           )}
         </>
       )}
@@ -134,13 +134,12 @@ function Resumen({
   )
 }
 
-function Fila({ publicacion: p }: { publicacion: PublicacionPorVencer }) {
-  const vencida = p.diasRestantes <= 0
+function Fila({ publicacion: p }: { publicacion: PublicacionEnSeguimiento }) {
+  const viejo = p.diasPublicado > 90
 
   return (
-    <FilaTabla atenuada={vencida}>
+    <FilaTabla>
       <Celda>
-        {/* Enlace al detalle: el superadministrador sí puede verlo aunque esté vencido. */}
         <Link to={`/vehicle/${p.id}`} className="font-medium text-foreground hover:underline">
           {p.vehiculo}
         </Link>
@@ -161,32 +160,35 @@ function Fila({ publicacion: p }: { publicacion: PublicacionPorVencer }) {
         </span>
 
         {!p.vendedorActivo && (
-          <p className="text-xs text-destructive">Inactivo: no puede renovar</p>
+          <p className="text-xs text-destructive">Inactivo: no recibe el seguimiento</p>
         )}
       </Celda>
 
       <Celda>
         <span
           className={cn(
-            'inline-flex items-center gap-1.5 text-sm',
-            vencida ? 'font-medium text-destructive' : 'text-foreground',
+            'text-sm',
+            viejo ? 'font-medium text-destructive' : 'text-foreground',
           )}
         >
-          {vencida ? (
-            <AlertTriangle className="size-3.5 shrink-0" aria-hidden />
-          ) : (
-            <CalendarClock className="size-3.5 shrink-0" aria-hidden />
-          )}
-          {textoDias(p.diasRestantes)}
+          {textoDias(p.diasPublicado)}
         </span>
 
         <p className="flex items-center gap-1 text-xs text-muted-foreground">
-          {formatearFechaCorta(p.fechaVencimientoPublicacion)}
-          {p.avisoEnviado && (
+          {p.fechaPublicacion ? formatearFechaCorta(p.fechaPublicacion) : '—'}
+
+          {p.avisoRevisionEnviadoEn ? (
             <>
               <MailCheck className="ml-1 size-3 shrink-0" aria-hidden />
               <span>avisado</span>
             </>
+          ) : (
+            p.diasParaRevision > 0 && (
+              <>
+                <CalendarClock className="ml-1 size-3 shrink-0" aria-hidden />
+                <span>revisión en {p.diasParaRevision} d</span>
+              </>
+            )
           )}
         </p>
       </Celda>
@@ -199,8 +201,11 @@ function Fila({ publicacion: p }: { publicacion: PublicacionPorVencer }) {
 }
 
 function textoDias(dias: number): string {
-  if (dias <= 0) return dias === 0 ? 'Vence hoy' : `Venció hace ${Math.abs(dias)} d`
-  if (dias === 1) return 'Vence mañana'
+  if (dias < 1) return 'Hoy'
+  if (dias === 1) return '1 día'
+  if (dias < 30) return `${dias} días`
 
-  return `En ${dias} días`
+  const meses = Math.floor(dias / 30)
+
+  return meses === 1 ? 'Un mes' : `${meses} meses`
 }

@@ -44,8 +44,8 @@ const PqrsPage = lazy(() =>
 const BannersPage = lazy(() =>
   import('./features/admin/BannersPage').then((m) => ({ default: m.BannersPage })),
 )
-const VigenciaPage = lazy(() =>
-  import('./features/admin/VigenciaPage').then((m) => ({ default: m.VigenciaPage })),
+const SeguimientoPage = lazy(() =>
+  import('./features/admin/SeguimientoPage').then((m) => ({ default: m.SeguimientoPage })),
 )
 const ContactoPage = lazy(() =>
   import('./features/pqrs/ContactoPage').then((m) => ({ default: m.ContactoPage })),
@@ -120,7 +120,7 @@ export default function App() {
                     <Route path="suscripciones" element={<SuscripcionesPage />} />
                     <Route path="pqrs" element={<PqrsPage />} />
                     <Route path="banners" element={<BannersPage />} />
-                    <Route path="vigencia" element={<VigenciaPage />} />
+                    <Route path="seguimiento" element={<SeguimientoPage />} />
                   </Route>
                 </Route>
 

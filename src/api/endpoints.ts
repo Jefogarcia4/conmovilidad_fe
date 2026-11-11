@@ -102,11 +102,13 @@ export const vehiculos = {
     api.patch<void>(`/vehiculos/${id}/estado`, { estado }),
 
   /**
-   * Arranca de nuevo la vigencia del aviso. No pasa por la pasarela: el cobro de la publicación
-   * es único por vehículo, así que renovar no cuesta.
+   * El vendedor confirma que el vehículo sigue disponible.
+   *
+   * No renueva ni republica nada: la publicación no vence. Lo único que hace es correr al
+   * siguiente período el correo de seguimiento.
    */
-  renovarPublicacion: (id: string) =>
-    api.post<VehiculoDetalle>(`/vehiculos/${id}/renovar-publicacion`),
+  confirmarDisponibilidad: (id: string) =>
+    api.post<VehiculoDetalle>(`/vehiculos/${id}/confirmar-disponibilidad`),
 }
 
 export interface ImagenSubida {

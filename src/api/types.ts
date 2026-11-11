@@ -108,10 +108,12 @@ export interface VehiculoLista {
   fechaCreacion: string
   fechaPublicacion?: string
   /**
-   * Hasta cuándo se muestra el aviso en el catálogo. Ausente en los vehículos que no vencen
-   * —los que no están publicados, y los cargados antes de que la publicación tuviera vigencia—.
+   * Cuándo toca preguntarle al vendedor si el vehículo sigue disponible.
+   *
+   * No es un vencimiento: la publicación no caduca y nunca sale del catálogo por antigüedad.
+   * Ausente en lo que no está publicado.
    */
-  fechaVencimientoPublicacion?: string
+  fechaRevisionPublicacion?: string
 }
 
 export interface VehiculoImagen {
