@@ -34,18 +34,31 @@ export function DetalleVehiculoPage() {
   }
 
   if (error) {
-    const noEncontrado = error instanceof ApiError && error.status === 404
+    const apiError = error instanceof ApiError ? error : null
+
+    // La API distingue el aviso vencido del resto de los 404 con un código propio, y merece su
+    // propio mensaje: «no existe» y «se le acabó la vigencia» no son lo mismo para quien llega
+    // con el enlace guardado.
+    const vencida = apiError?.codigo === 'vehiculo.publicacion_vencida'
+    const noEncontrado = apiError?.status === 404
+
+    const { titulo: tituloError, detalle } = vencida
+      ? {
+          titulo: 'Esta publicación ya no está disponible',
+          detalle:
+            'El aviso cumplió su tiempo en el catálogo. Si el vehículo sigue en venta, el vendedor puede volver a publicarlo.',
+        }
+      : noEncontrado
+        ? {
+            titulo: 'Este vehículo no está disponible',
+            detalle: 'Puede que se haya retirado del catálogo o que pertenezca a otro convenio.',
+          }
+        : { titulo: 'No pudimos cargar el vehículo', detalle: (error as Error).message }
 
     return (
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
-        <h1 className="font-display text-2xl font-bold text-foreground">
-          {noEncontrado ? 'Este vehículo no está disponible' : 'No pudimos cargar el vehículo'}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {noEncontrado
-            ? 'Puede que se haya retirado del catálogo o que pertenezca a otro convenio.'
-            : (error as Error).message}
-        </p>
+        <h1 className="font-display text-2xl font-bold text-foreground">{tituloError}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{detalle}</p>
 
         <Link to="/home" className="mt-6 inline-block">
           <Boton>Volver al catálogo</Boton>

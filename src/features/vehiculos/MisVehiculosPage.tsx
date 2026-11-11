@@ -50,6 +50,13 @@ export function MisVehiculosPage() {
     },
   })
 
+  const renovar = useMutation({
+    mutationFn: (id: string) => vehiculos.renovarPublicacion(id),
+    // Invalida todo el árbol de vehículos: el aviso vuelve al catálogo del convenio, no solo
+    // a esta lista.
+    onSuccess: () => clienteConsultas.invalidateQueries({ queryKey: ['vehiculos'] }),
+  })
+
   const total = data?.totalRegistros ?? 0
 
   return (
@@ -98,6 +105,8 @@ export function MisVehiculosPage() {
               eliminandoId={eliminar.isPending ? (porEliminar?.id ?? undefined) : undefined}
               onPagar={(v) => pagar.mutate(v.id)}
               pagandoId={pagar.isPending ? pagar.variables : undefined}
+              onRenovar={(v) => renovar.mutate(v.id)}
+              renovandoId={renovar.isPending ? renovar.variables : undefined}
             />
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -109,6 +118,8 @@ export function MisVehiculosPage() {
                   eliminando={eliminar.isPending && porEliminar?.id === v.id}
                   onPagar={() => pagar.mutate(v.id)}
                   pagando={pagar.isPending && pagar.variables === v.id}
+                  onRenovar={() => renovar.mutate(v.id)}
+                  renovando={renovar.isPending && renovar.variables === v.id}
                 />
               ))}
             </div>

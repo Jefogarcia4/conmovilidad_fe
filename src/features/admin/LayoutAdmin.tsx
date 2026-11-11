@@ -1,6 +1,7 @@
 import {
   Building2,
   CalendarClock,
+  CalendarX,
   GalleryHorizontal,
   Handshake,
   MessageSquare,
@@ -18,6 +19,7 @@ const secciones = [
   { a: '/admin/suscripciones', texto: 'Suscripciones', Icono: CalendarClock },
   { a: '/admin/pqrs', texto: 'PQRS', Icono: MessageSquare },
   { a: '/admin/banners', texto: 'Banners', Icono: GalleryHorizontal },
+  { a: '/admin/vigencia', texto: 'Vigencia', Icono: CalendarX },
 ]
 
 export function LayoutAdmin() {

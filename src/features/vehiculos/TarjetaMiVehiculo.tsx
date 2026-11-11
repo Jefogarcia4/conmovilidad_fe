@@ -1,10 +1,21 @@
-import { CreditCard, Eye, ImageOff, Loader2, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
+import {
+  CalendarClock,
+  CreditCard,
+  Eye,
+  ImageOff,
+  Loader2,
+  Pencil,
+  RefreshCw,
+  ShieldCheck,
+  Trash2,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { VehiculoLista } from '@/api/types'
 import { ImagenCompleta } from '@/components/ui/ImagenCompleta'
 import { formatearKilometraje, formatearPrecio } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import { presentarEstado } from './estadoVehiculo'
+import { textoVigencia, vigenciaDe } from './vigenciaPublicacion'
 
 interface Props {
   vehiculo: VehiculoLista
@@ -12,6 +23,8 @@ interface Props {
   eliminando?: boolean
   onPagar: () => void
   pagando?: boolean
+  onRenovar: () => void
+  renovando?: boolean
 }
 
 /**
@@ -24,10 +37,17 @@ export function TarjetaMiVehiculo({
   eliminando = false,
   onPagar,
   pagando = false,
+  onRenovar,
+  renovando = false,
 }: Props) {
   const navegar = useNavigate()
   const estado = presentarEstado(vehiculo.estado)
   const pendienteDePago = vehiculo.estado === 'PendientePago'
+  const vigencia = vigenciaDe(vehiculo)
+
+  // Se ofrece renovar cuando ya venció y también en los últimos días: renovar antes no pierde
+  // tiempo, porque el nuevo período se cuenta desde el momento en que se renueva.
+  const ofrecerRenovar = vigencia !== null && (vigencia.vencida || vigencia.porVencer)
 
   const meta = [
     String(vehiculo.modelo),
@@ -78,6 +98,47 @@ export function TarjetaMiVehiculo({
         <p className="font-display text-xl font-bold text-foreground">
           {formatearPrecio(vehiculo.precio)}
         </p>
+
+        {vigencia && (
+          <p
+            className={cn(
+              'inline-flex items-center gap-1.5 text-xs',
+              vigencia.vencida
+                ? 'font-medium text-destructive'
+                : vigencia.porVencer
+                  ? 'font-medium text-foreground'
+                  : 'text-muted-foreground',
+            )}
+          >
+            <CalendarClock className="size-3.5 shrink-0" aria-hidden />
+            {textoVigencia(vigencia)}
+            {vigencia.vencida && (
+              <span className="font-normal text-muted-foreground">· fuera del catálogo</span>
+            )}
+          </p>
+        )}
+
+        {ofrecerRenovar && (
+          <button
+            type="button"
+            onClick={onRenovar}
+            disabled={renovando}
+            className={cn(
+              'inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg',
+              'border border-border bg-background px-3 text-sm font-medium text-foreground',
+              'transition-all outline-none hover:bg-muted',
+              'focus-visible:ring-3 focus-visible:ring-ring/50',
+              'disabled:pointer-events-none disabled:opacity-50',
+            )}
+          >
+            {renovando ? (
+              <Loader2 className="size-3.5 animate-spin" aria-hidden />
+            ) : (
+              <RefreshCw className="size-3.5" aria-hidden />
+            )}
+            Renovar publicación
+          </button>
+        )}
 
         {/* El pago pendiente es lo único que separa al vehículo del catálogo, así que va como
             acción principal a ancho completo y no escondido entre los iconos de gestión. */}

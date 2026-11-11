@@ -100,6 +100,13 @@ export const vehiculos = {
 
   cambiarEstado: (id: string, estado: string) =>
     api.patch<void>(`/vehiculos/${id}/estado`, { estado }),
+
+  /**
+   * Arranca de nuevo la vigencia del aviso. No pasa por la pasarela: el cobro de la publicación
+   * es único por vehículo, así que renovar no cuesta.
+   */
+  renovarPublicacion: (id: string) =>
+    api.post<VehiculoDetalle>(`/vehiculos/${id}/renovar-publicacion`),
 }
 
 export interface ImagenSubida {

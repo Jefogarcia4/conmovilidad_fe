@@ -107,6 +107,11 @@ export interface VehiculoLista {
   publicadoPor: string
   fechaCreacion: string
   fechaPublicacion?: string
+  /**
+   * Hasta cuándo se muestra el aviso en el catálogo. Ausente en los vehículos que no vencen
+   * —los que no están publicados, y los cargados antes de que la publicación tuviera vigencia—.
+   */
+  fechaVencimientoPublicacion?: string
 }
 
 export interface VehiculoImagen {

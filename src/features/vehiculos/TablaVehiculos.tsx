@@ -1,9 +1,19 @@
-import { CreditCard, Eye, ImageOff, Loader2, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
+import {
+  CreditCard,
+  Eye,
+  ImageOff,
+  Loader2,
+  Pencil,
+  RefreshCw,
+  ShieldCheck,
+  Trash2,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { VehiculoLista } from '@/api/types'
 import { formatearKilometraje, formatearPrecio } from '@/lib/formato'
 import { resolverUrlImagen } from '@/lib/imagenes'
 import { EstadoBadge } from './EstadoBadge'
+import { textoVigencia, vigenciaDe } from './vigenciaPublicacion'
 
 interface Props {
   vehiculos: VehiculoLista[]
@@ -13,6 +23,9 @@ interface Props {
   onPagar: (vehiculo: VehiculoLista) => void
   /** Id del vehículo cuyo checkout se está abriendo. */
   pagandoId?: string
+  onRenovar: (vehiculo: VehiculoLista) => void
+  /** Id del vehículo cuya publicación se está renovando. */
+  renovandoId?: string
 }
 
 export function TablaVehiculos({
@@ -21,6 +34,8 @@ export function TablaVehiculos({
   eliminandoId,
   onPagar,
   pagandoId,
+  onRenovar,
+  renovandoId,
 }: Props) {
   const navegar = useNavigate()
 
@@ -105,6 +120,7 @@ export function TablaVehiculos({
 
                 <td className="p-2 align-middle whitespace-nowrap">
                   <EstadoBadge estado={v.estado} />
+                  <Vigencia vehiculo={v} />
                 </td>
 
                 <td className="p-2 text-right align-middle font-medium whitespace-nowrap text-foreground">
@@ -130,6 +146,12 @@ export function TablaVehiculos({
                         Pagar
                       </button>
                     )}
+
+                    <BotonRenovar
+                      vehiculo={v}
+                      onRenovar={onRenovar}
+                      renovando={renovandoId === v.id}
+                    />
 
                     <BotonAccion
                       etiqueta={`Ver ${v.marca} ${v.linea}`}
@@ -192,5 +214,58 @@ function BotonAccion({ etiqueta, onClick, children, destructivo, disabled }: Pro
     >
       {children}
     </button>
+  )
+}
+
+/** Vigencia del aviso, bajo el estado. Nada si el vehículo no tiene vencimiento. */
+function Vigencia({ vehiculo }: { vehiculo: VehiculoLista }) {
+  const vigencia = vigenciaDe(vehiculo)
+
+  if (!vigencia) return null
+
+  return (
+    <p
+      className={
+        vigencia.vencida
+          ? 'mt-1 text-xs font-medium text-destructive'
+          : vigencia.porVencer
+            ? 'mt-1 text-xs font-medium text-foreground'
+            : 'mt-1 text-xs text-muted-foreground'
+      }
+    >
+      {textoVigencia(vigencia)}
+    </p>
+  )
+}
+
+/**
+ * Renovar solo aparece cuando hay algo que renovar: con el aviso vencido o a punto. Permanente
+ * sería un botón que casi nunca hace nada visible y que estorba en una fila ya cargada.
+ */
+function BotonRenovar({
+  vehiculo,
+  onRenovar,
+  renovando,
+}: {
+  vehiculo: VehiculoLista
+  onRenovar: (vehiculo: VehiculoLista) => void
+  renovando: boolean
+}) {
+  const vigencia = vigenciaDe(vehiculo)
+
+  if (!vigencia || (!vigencia.vencida && !vigencia.porVencer)) return null
+
+  return (
+    <BotonAccion
+      etiqueta={`Renovar la publicación de ${vehiculo.marca} ${vehiculo.linea}`}
+      onClick={() => onRenovar(vehiculo)}
+      disabled={renovando}
+    >
+      {renovando ? (
+        <Loader2 className="size-4 animate-spin" aria-hidden />
+      ) : (
+        <RefreshCw className="size-4" aria-hidden />
+      )}
+    </BotonAccion>
   )
 }
