@@ -41,6 +41,9 @@ const SuscripcionesPage = lazy(() =>
 const PqrsPage = lazy(() =>
   import('./features/admin/PqrsPage').then((m) => ({ default: m.PqrsPage })),
 )
+const BannersPage = lazy(() =>
+  import('./features/admin/BannersPage').then((m) => ({ default: m.BannersPage })),
+)
 const ContactoPage = lazy(() =>
   import('./features/pqrs/ContactoPage').then((m) => ({ default: m.ContactoPage })),
 )
@@ -113,6 +116,7 @@ export default function App() {
                     <Route path="tarifas" element={<TarifasPage />} />
                     <Route path="suscripciones" element={<SuscripcionesPage />} />
                     <Route path="pqrs" element={<PqrsPage />} />
+                    <Route path="banners" element={<BannersPage />} />
                   </Route>
                 </Route>
 

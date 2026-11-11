@@ -1,4 +1,12 @@
-import { Building2, CalendarClock, Handshake, MessageSquare, Tag, Users } from 'lucide-react'
+import {
+  Building2,
+  CalendarClock,
+  GalleryHorizontal,
+  Handshake,
+  MessageSquare,
+  Tag,
+  Users,
+} from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
@@ -9,6 +17,7 @@ const secciones = [
   { a: '/admin/tarifas', texto: 'Tarifas', Icono: Tag },
   { a: '/admin/suscripciones', texto: 'Suscripciones', Icono: CalendarClock },
   { a: '/admin/pqrs', texto: 'PQRS', Icono: MessageSquare },
+  { a: '/admin/banners', texto: 'Banners', Icono: GalleryHorizontal },
 ]
 
 export function LayoutAdmin() {
